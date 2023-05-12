@@ -1,25 +1,23 @@
 import os
 import tempfile
-import httpx
 import discord
 from redbot.core import commands
-from tiktok_scraper import TikTokScraper
+from tiktokapipy import TiktokAPI
 
 class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.api = TiktokAPI()
 
     @commands.command()
     async def fyp(self, ctx):
         # Fetch trending TikTok videos
-        scraper = TikTokScraper()
-        videos = scraper.trending(count=1)
+        trending_videos = self.api.get_trending_videos(count=1)
 
         # Download and send the first video
-        video = videos[0]
-        async with httpx.AsyncClient() as client:
-            response = await client.get(video['videoUrl'])
-            video_data = response.content
+        video = trending_videos[0]
+        async with self.bot.session.get(video['video_url']) as response:
+            video_data = await response.read()
 
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(video_data)
@@ -28,14 +26,20 @@ class fyp(commands.Cog):
 
             # Create an embed with video details
             embed = discord.Embed(title=video['description'], color=0x00ff00)
-            embed.set_author(name=video['author']['username'])
-            embed.set_footer(text=f"Uploaded on {video['createTime']}")
+            embed.set_author(name='@' + video['author']['nickname'], url=f"https://www.tiktok.com/@{video['author']['nickname']}")
+            embed.set_footer(text=f"Uploaded on {video['create_time']}")
+
+            # Add like, comment, and share counts to the embed
+            embed.add_field(name="Likes", value=video['statistics']['digg_count'], inline=True)
+            embed.add_field(name="Comments", value=video['statistics']['comment_count'], inline=True)
+            embed.add_field(name="Shares", value=video['statistics']['share_count'], inline=True)
 
             # Send the video and embed to the chat
             await ctx.send(file=discord.File(temp_file.name, f"{video['id']}.mp4"), embed=embed)
 
             # Clean up the temporary file
             os.unlink(temp_file.name)
+
 
 
 
