@@ -2,7 +2,7 @@ import os
 import tempfile
 import discord
 from redbot.core import commands
-from tiktokapipy import TiktokAPI
+from tiktokapipy.api import TikTokAPI
 
 class fyp(commands.Cog):
     def __init__(self, bot):
