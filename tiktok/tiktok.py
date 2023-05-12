@@ -6,7 +6,7 @@ class fyp(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.api = TikAPI(api_key="your_api_key_here")
+        self.api = TikAPI("your_api_key_here")
 
     @commands.command()
     async def popular(self, ctx):
