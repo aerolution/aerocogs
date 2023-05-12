@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from tikapi import TikAPI
 
-class TikTok(commands.Cog):
+class fyp(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
