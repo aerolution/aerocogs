@@ -3,14 +3,14 @@ from discord.ext import commands
 import requests
 import json
 
-class Lockdown(commands.Cog):
+class Lock(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.locked_channels = set()
 
     @commands.command()
     @commands.has_permissions(manage_channels=True)
-    async def lockdown(self, ctx):
+    async def lock(self, ctx):
         if ctx.channel.id in self.locked_channels:
             await ctx.send("Channel is already locked.")
             return
@@ -50,5 +50,5 @@ class Lockdown(commands.Cog):
         self.locked_channels.remove(ctx.channel.id)
 
 def setup(bot):
-    bot.add_cog(Lockdown(bot))
+    bot.add_cog(Lock(bot))
 
