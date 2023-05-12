@@ -3,14 +3,14 @@ from discord.ext import commands
 import requests
 import json
 
-class Lock(commands.Cog):
+class Lockdown(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.locked_channels = set()
 
     @commands.command()
     @commands.has_permissions(manage_channels=True)
-    async def lock(self, ctx):
+    async def lockdown(self, ctx):
         if ctx.channel.id in self.locked_channels:
             await ctx.send("Channel is already locked.")
             return
@@ -19,7 +19,7 @@ class Lock(commands.Cog):
         await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
 
         # Get lock GIF using GIPHY API
-        response = requests.get(f"https://api.giphy.com/v1/gifs/random?api_key=<your_api_key>&tag=lock")
+        response = requests.get(f"https://api.giphy.com/v1/gifs/random?api_key=rw40QaZ5L4AG1eJ1DK0PzgyYckMisIjQ&tag=lock")
         gif_data = json.loads(response.text)
         gif_url = gif_data["data"]["image_original_url"]
 
@@ -50,4 +50,5 @@ class Lock(commands.Cog):
         self.locked_channels.remove(ctx.channel.id)
 
 def setup(bot):
-    bot.add_cog(Lock(bot))
+    bot.add_cog(Lockdown(bot))
+
