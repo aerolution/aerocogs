@@ -1,6 +1,6 @@
 import discord
 from redbot.core import commands
-from tikapi import TikApi
+from tikapi import TikAPI
 
 class TikTok(commands.Cog):
     def __init__(self, bot):
