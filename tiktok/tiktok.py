@@ -5,7 +5,7 @@ from tikapi import TikAPI
 class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.tiktok_api = TikApi("YOUR_API_KEY")
+        self.tiktok_api = TikAPI("hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS")
 
     @commands.command()
     async def fyp(self, ctx, username):
