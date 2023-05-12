@@ -4,7 +4,6 @@ from redbot.core import commands
 from TikTokApi import TikTokApi
 import random
 import aiohttp
-import os
 
 class fyp(commands.Cog):
     """Get a random TikTok video from FYP"""
@@ -24,6 +23,14 @@ class fyp(commands.Cog):
 
         # Create the response message
         response = f"Here's a trending TikTok video: {caption} - Uploaded by {uploader}"
+        
+        # Download the video and send it to the Discord channel
+        async with aiohttp.ClientSession() as session:
+            async with session.get(video_url) as r:
+                if r.status == 200:
+                    fp = await ctx.bot.loop.run_in_executor(None, open, f"{random.randint(1,999999)}.mp4", "wb")
+                    fp.write(await r.read())
+
         
 
 
