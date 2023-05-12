@@ -2,7 +2,7 @@ from redbot.core import commands
 import json
 import requests
 class MyCog(commands.Cog):
-    """A Roblox cog for redbot!"""
+    """A Roblox cog for redbot!!"""
 
     def __init__(self, bot):
         self.bot = bot
