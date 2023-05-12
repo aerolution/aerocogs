@@ -4,7 +4,7 @@ import tempfile
 import aiohttp
 import discord
 from redbot.core import commands
-from tiktokapi import TikTokApi
+from TikTokApi import TikTokApi
 
 class fyp(commands.Cog):
     def __init__(self, bot):
