@@ -33,4 +33,4 @@ class MyCog(commands.Cog):
     embed.add_field(name="created", value=f"{created_date}", inline=False)
     embed.add_field(name="description", value=f"{description}", inline=True)
     embed.set_thumbnail(url=f"{thumbnail_url}")
-    await ctx.send(embed=embed)
+    await ctx.send(embed=embed))
