@@ -1,35 +1,43 @@
-import asyncio
+import os
+import tempfile
+import aiohttp
 import discord
 from redbot.core import commands
-from TikTokApi import TikTokApi
-import random
-import aiohttp
+from tiktok_scraper import TikTokScraper
 
 class fyp(commands.Cog):
-    """Get a random TikTok video from FYP"""
-
     def __init__(self, bot):
         self.bot = bot
-        self.api = TikTokApi()
+        self.scraper = TikTokScraper()
 
     @commands.command()
     async def fyp(self, ctx):
-        """Get a random TikTok video from FYP"""
-        # Get a random TikTok video from FYP
-        video = self.api.getTikTokById(self.api.trending(count=100)[random.randint(0,99)]['id'])
-        video_url = video['video']['urls'][0]
-        caption = video['desc']
-        uploader = video['author']['uniqueId']
+        # Fetch trending TikTok videos
+        trending_videos = await self.scraper.trending()
 
-        # Create the response message
-        response = f"Here's a trending TikTok video: {caption} - Uploaded by {uploader}"
-        
-        # Download the video and send it to the Discord channel
+        # Download and send the first video
+        video = trending_videos[0]
         async with aiohttp.ClientSession() as session:
-            async with session.get(video_url) as r:
-                if r.status == 200:
-                    fp = await ctx.bot.loop.run_in_executor(None, open, f"{random.randint(1,999999)}.mp4", "wb")
-                    fp.write(await r.read())
+            async with session.get(video['video']['downloadAddr']) as resp:
+                video_data = await resp.read()
+
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(video_data)
+            temp_file.flush()
+            temp_file.seek(0)
+
+            # Create an embed with video details
+            embed = discord.Embed(title=video['desc'], color=0x00ff00)
+            embed.set_author(name=video['author']['uniqueId'])
+            embed.set_footer(text=f"Uploaded on {video['createTime']}")
+
+            # Send the video and embed to the chat
+            await ctx.send(file=discord.File(temp_file.name, f"{video['id']}.mp4"), embed=embed)
+
+            # Clean up the temporary file
+            os.unlink(temp_file.name)
+
+def setup(bot):
 
         
 
