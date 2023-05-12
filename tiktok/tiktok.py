@@ -2,11 +2,11 @@ import discord
 from discord.ext import commands
 from tikapi import TikAPI
 
-class fyp(commands.Cog):
+class TikTok(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.api = TikAPI(account_key="hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS", api_key="2y4qLDFxAcxujMjazkQNzQKUhvGv43U1LmSyF6KYOytngcNw")
+        self.api = TikAPI(api_key="your_api_key_here")
 
     @commands.command()
     async def popular(self, ctx):
@@ -76,11 +76,12 @@ class fyp(commands.Cog):
 
     @commands.command()
     async def get_user(self, ctx, user_id):
-        user = self.api.get_user(user_id)
+        user = self.api.user(unique_id=user_id, account_key="your_account_key_here")
 
         username = user['uniqueId']
         bio = user['signature']
-        avatar = user['avatarLarger']
+        avatar = user['avatarThumb']
+
         following = user['following']
         followers = user['fans']
 
@@ -120,5 +121,3 @@ class fyp(commands.Cog):
             await self.api.like(reaction.message.id)
         elif reaction.emoji == "👎":
             await self.api.dislike(reaction.message.id)
-
-
