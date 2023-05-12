@@ -1,19 +1,33 @@
 import discord
 from redbot.core import commands
-from tikapi import TikAPI
+from tikapi import TikAPI, ValidationException, ResponseException
 
-class fyp(commands.Cog):
+class TikTokUser(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.tiktok_api = TikAPI("hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS")
+        self.api_key = "hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS"
+        self.user_account_key = "DemoAccountKeyTokenSeHYGXDfd4SFD320Sc39Asd0Sc39A"
 
     @commands.command()
-    async def fyp(self, ctx, username):
-        """Fetches a user's latest TikTok video."""
+    async def tiktokuser(self, ctx):
+        """Fetches information about a TikTok user."""
         try:
-            user_videos = self.tiktok_api.get_user_videos(username)
-            latest_video = user_videos[0]
-            video_url = latest_video.video_url
-            await ctx.send(f"Latest TikTok video from {username}: {video_url}")
+            api = TikAPI(self.api_key)
+            user = api.user(accountKey=self.user_account_key)
+            response = user.info()
+            response_json = response.json()
+            user_info = f"Username: {response_json['user']['uniqueId']}\n" \
+                        f"Full Name: {response_json['user']['nickname']}\n" \
+                        f"Bio: {response_json['user']['signature']}\n" \
+                        f"Following: {response_json['stats']['followingCount']}\n" \
+                        f"Followers: {response_json['stats']['followerCount']}\n" \
+                        f"Total Likes: {response_json['stats']['heartCount']}"
+
+            await ctx.send(user_info)
+        except ValidationException as e:
+            await ctx.send(f"Validation error: {e}, {e.field}")
+        except ResponseException as e:
+            await ctx.send(f"Response error: {e}, {e.response.status_code}")
         except Exception as e:
-            await ctx.send(f"Error fetching TikTok video: {e}")
+            await ctx.send(f"Error fetching user info: {e}")
+
