@@ -19,7 +19,7 @@ class Lock(commands.Cog):
         await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
 
         # Get lock GIF using GIPHY API
-        response = requests.get(f"https://api.giphy.com/v1/gifs/random?api_key=rw40QaZ5L4AG1eJ1DK0PzgyYckMisIjQ&tag=lock")
+        response = requests.get(f"https://api.giphy.com/v1/gifs/random?api_key=YOUR_API_KEY_HERE&tag=lock")
         gif_data = json.loads(response.text)
         gif_url = gif_data["data"]["image_original_url"]
 
@@ -51,5 +51,4 @@ class Lock(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Lock(bot))
-
 
