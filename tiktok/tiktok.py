@@ -15,9 +15,12 @@ class fyp(commands.Cog):
     async def fyp(self, ctx):
         """Download and send a random TikTok video"""
         url = "https://www.tiktok.com/en/trending"
-        response = requests.get(url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        }
+        response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
-        videos = soup.find_all("h2", {"class": "jsx-3852143988"})
+        videos = soup.find_all("h2", {"class": "tw-ellipsis tw-font-bold tw-text-lg tw-leading-tight tw-title"})
         
         if not videos:
             response = "Sorry, but there are no trending videos available right now"
@@ -29,7 +32,7 @@ class fyp(commands.Cog):
         video_id = video_url.split("/")[-1]
         api_url = f"https://www.tiktok.com/node/share/video/{video_id}"
         
-        response = requests.get(api_url)
+        response = requests.get(api_url, headers=headers)
         if response.status_code != 200:
             response = "Sorry, but there was an error downloading the video"
             await ctx.send(response)
@@ -38,7 +41,7 @@ class fyp(commands.Cog):
         data = response.json()
         video_url = data["itemInfo"]["itemStruct"]["video"]["playAddr"]
         
-        response = requests.get(video_url, stream=True)
+        response = requests.get(video_url, stream=True, headers=headers)
         with open('video.mp4', 'wb') as f:
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
