@@ -14,7 +14,7 @@ class fyp(commands.Cog):
         try:
             response = self.user.posts.video(id=video_id)
             video_info = response.json()
-            print(video_info)
+            await ctx.send(video_info)
             if "id" in video_info:
                 embed = discord.Embed(title="TikTok Video Information")
                 embed.add_field(name="Video ID", value=video_info["id"], inline=False)
