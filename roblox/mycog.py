@@ -9,6 +9,8 @@ class MyCog(commands.Cog):
 
     @commands.command()
     async def rouser(ctx, username):
+       
+    
     users_json = requests.get(f"https://www.roblox.com/search/users/results?keyword={username}&maxRows=1&startIndex=0")
     users = json.loads(users_json.text)
     user_id = users['UserSearchResults'][0]['UserId']
