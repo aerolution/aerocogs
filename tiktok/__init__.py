@@ -1,6 +1,5 @@
+import httpx
 from .tiktok import fyp
 
-self.session = aiohttp.ClientSession()
-
-async def setup(bot):
-    await bot.add_cog(fyp(bot))
+def setup(bot):
+    bot.add_cog(fyp(bot))
