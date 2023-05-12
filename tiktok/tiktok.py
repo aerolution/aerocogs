@@ -2,7 +2,7 @@ import discord
 from redbot.core import commands
 from tikapi import TikAPI, ValidationException, ResponseException
 
-class TikTok(commands.Cog):
+class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api = TikAPI("myAPIKey")
