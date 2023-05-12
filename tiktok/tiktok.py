@@ -38,6 +38,5 @@ class fyp(commands.Cog):
             os.unlink(temp_file.name)
 
 def setup(bot):
-    bot.add_cog(fyp(bot))
 
 
