@@ -1,14 +1,16 @@
 from redbot.core import commands
 
 class fyp(commands.Cog):
+    """Fetch TikTok Videos"""
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def fyp(self, ctx):
-        await ctx.send("This is a test message.")
-
-def setup(bot):
+        """This does stuff!"""
+        # Your code will go here
+        await ctx.send("I can do stuff!")
 
 
 
