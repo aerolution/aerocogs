@@ -7,7 +7,7 @@ from tiktokapipy.api import TikTokAPI
 class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api = TiktokAPI()
+        with TikTokAPI() as api:
 
     @commands.command()
     async def fyp(self, ctx):
