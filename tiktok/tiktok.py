@@ -4,8 +4,14 @@ import discord
 from tiktokpy import TikTokPy
 from redbot.core import commands
 
-api = TikTokPy()
-api.useTestApi()
+api = TikTokPy(headers={
+  'accept': 'application/json, text/plain, */*',
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+  'referer': 'https://www.tiktok.com/',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin'
+})
 
 class fyp(commands.Cog):
     """My custom cog"""
