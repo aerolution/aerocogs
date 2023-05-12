@@ -1,6 +1,6 @@
 import os
 import tempfile
-from aiohttp import aiohttp
+import aiohttp
 import discord
 from redbot.core import commands
 from TikTokApi import TikTokApi
@@ -39,3 +39,4 @@ class fyp(commands.Cog):
 
 def setup(bot):
     bot.add_cog(fyp(bot))
+
