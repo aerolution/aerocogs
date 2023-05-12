@@ -39,8 +39,7 @@ class MyCog(commands.Cog):
         embed = discord.Embed(title=f"{display_name}", url=f"https://www.roblox.com/users/{user_id}/profile",
                               description=description,
                               color=0x00b3ff)
-        embed.set_author(name="RoUser")
-        embed.set_footer(text="Made by AllysonStudiosDev")
+        embed.set_author(name="Roblox")
         embed.add_field(name="Username", value=f"{display_name}", inline=False)
         embed.add_field(name="ID", value=f"{user_id}", inline=True)
         embed.add_field(name="Date created", value=f"{created_date}", inline=False)
