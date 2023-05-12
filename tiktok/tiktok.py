@@ -2,16 +2,17 @@ import asyncio
 import discord
 from redbot.core import commands
 import requests
+import random
 from bs4 import BeautifulSoup
 
-class fyp(commands.Cog):
+class MyCog(commands.Cog):
     """Get trending TikTok videos"""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def fyp(self, ctx):
+    async def tiktok(self, ctx):
         """Get the trending TikTok videos"""
         url = "https://www.tiktok.com/en/trending"
         response = requests.get(url)
