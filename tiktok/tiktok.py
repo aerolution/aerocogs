@@ -3,8 +3,7 @@ import tempfile
 import httpx
 import discord
 from redbot.core import commands
-from TikTokApi import TikTokApi
-from tiktok_scraper import hashtags, user
+from tiktok_scraper import TikTokScraper
 
 class fyp(commands.Cog):
     def __init__(self, bot):
@@ -13,7 +12,8 @@ class fyp(commands.Cog):
     @commands.command()
     async def fyp(self, ctx):
         # Fetch trending TikTok videos
-        videos = hashtags.get_tiktoks_by_hashtag('fyp', count=1)
+        scraper = TikTokScraper()
+        videos = scraper.trending(count=1)
 
         # Download and send the first video
         video = videos[0]
@@ -27,7 +27,7 @@ class fyp(commands.Cog):
             temp_file.seek(0)
 
             # Create an embed with video details
-            embed = discord.Embed(title=video['text'], color=0x00ff00)
+            embed = discord.Embed(title=video['description'], color=0x00ff00)
             embed.set_author(name=video['author']['username'])
             embed.set_footer(text=f"Uploaded on {video['createTime']}")
 
@@ -36,6 +36,9 @@ class fyp(commands.Cog):
 
             # Clean up the temporary file
             os.unlink(temp_file.name)
+
+
+
 
 
 
