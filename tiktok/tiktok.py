@@ -3,6 +3,7 @@ import discord
 from redbot.core import commands
 from TikTokApi import TikTokApi
 import random
+import aiohttp
 
 class fyp(commands.Cog):
     """Get a random TikTok video from FYP"""
