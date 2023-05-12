@@ -37,6 +37,5 @@ class fyp(commands.Cog):
             # Clean up the temporary file
             os.unlink(temp_file.name)
 
-def setup(bot):
 
 
