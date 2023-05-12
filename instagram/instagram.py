@@ -2,7 +2,7 @@ import discord
 from redbot.core import commands
 import instaloader
 
-class Instagram(commands.Cog):
+class ig(commands.Cog):
     """Instagram command."""
 
     def __init__(self, bot):
