@@ -4,14 +4,14 @@ import discord
 from tiktokpy import TikTokPy
 from redbot.core import commands
 
-api = TikTokPy(endpoint='https://tiktok33.p.rapidapi.com/')
+api = TikTokPy()
+api.useTestApi()
 
 class fyp(commands.Cog):
     """My custom cog"""
 
     def __init__(self, bot):
         self.bot = bot
-
 
     @commands.command()
     async def fyp(self, ctx):
