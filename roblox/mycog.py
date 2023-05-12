@@ -1,5 +1,6 @@
 from redbot.core import commands
-
+import json
+import requests
 class MyCog(commands.Cog):
     """My custom cog"""
 
@@ -8,25 +9,28 @@ class MyCog(commands.Cog):
 
     @commands.command()
     async def roblox(ctx, username):
-
- carros_json=requests.get(f"https://api.roblox.com/users/get-by-u...{username}")
- carros=json.loads(carros_json.text)
- test = (carros["Id"])
- #image
- carro_json2=requests.get(f"https://users.roblox.com/v1/users/{test}/status")
- carro2=json.loads(carro_json2.text)
- test2 = (carro2["status"])
-
- #display
- displayname2=requests.get(f"https://users.roblox.com/v1/users/{test}")
- displayname3=json.loads(displayname2.text)
- displayname4 = (displayname3["displayName"])
- #created
- date1=requests.get(f"https://users.roblox.com/v1/users/{test}")
- date2=json.loads(date1.text)
- date3 = (date2["created"])
-
- #description
- desc1=requests.get(f"https://users.roblox.com/v1/users/{test}")
- desc2=json.loads(desc1.text)
- desc3 = (desc2["description"])
+        users_json = requests.get(f"https://www.roblox.com/search/users/results?keyword={username}&maxRows=1&startIndex=0")
+    users = json.loads(users_json.text)
+    user_id = users['UserSearchResults'][0]['UserId']
+ 
+ 
+ 
+    profile_json = requests.get(f"https://users.roblox.com/v1/users/{user_id}")
+    profile = json.loads(profile_json.text)
+    display_name = profile["displayName"]
+    created_date = profile["created"]
+    description = profile["description"]
+ 
+    thumbnail_json = requests.get(f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={user_id}&size=100x100&format=Png&isCircular=false")
+    thumbnail = json.loads(thumbnail_json.text)
+    thumbnail_url = thumbnail['data'][0]['imageUrl']
+ 
+    embed = discord.Embed(title=f"{username}", url=f"https://www.roblox.com/users/{user_id}/profile", color=0x00b3ff)
+    embed.set_author(name="ROBLOX")
+ 
+    embed.add_field(name="id", value=f"{user_id}", inline=False)
+    embed.add_field(name="Displayname", value=f"{display_name}", inline=True)
+    embed.add_field(name="created", value=f"{created_date}", inline=False)
+    embed.add_field(name="description", value=f"{description}", inline=True)
+    embed.set_thumbnail(url=f"{thumbnail_url}")
+    await ctx.send(embed=embed)
