@@ -3,8 +3,15 @@ import asyncio
 import discord
 from discord.ext import commands
 from tiktokpy import TikTokPy
-
+from redbot.core import commands
 api = TikTokPy()
+
+class MyCog(commands.Cog):
+    """My custom cog"""
+
+    def __init__(self, bot):
+        self.bot = bot
+
 
     @commands.command()
 async def fyp(ctx):
