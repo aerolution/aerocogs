@@ -1,59 +1,39 @@
+import asyncio
 import discord
 from redbot.core import commands
+from TikTokApi import TikTokApi
 import random
-import requests
-import os
-from bs4 import BeautifulSoup
 
 class fyp(commands.Cog):
-    """Get trending TikTok videos"""
+    """Get a random TikTok video from FYP"""
 
     def __init__(self, bot):
         self.bot = bot
+        self.api = TikTokApi()
 
     @commands.command()
     async def fyp(self, ctx):
-        """Download and send a random TikTok video"""
-        url = "https://www.tiktok.com/en/trending"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-        }
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        videos = soup.find_all("h2", {"class": "tw-ellipsis tw-font-bold tw-text-lg tw-leading-tight tw-title"})
+        """Get a random TikTok video from FYP"""
+        # Get a random TikTok video from FYP
+        video = self.api.getTikTokById(self.api.trending(count=100)[random.randint(0,99)]['id'])
+        video_url = video['video']['urls'][0]
+        caption = video['desc']
+        uploader = video['author']['uniqueId']
+
+        # Create the response message
+        response = f"Here's a trending TikTok video: {caption} - Uploaded by {uploader}"
         
-        if not videos:
-            response = "Sorry, but there are no trending videos available right now"
-            await ctx.send(response)
-            return
-        
-        random_video = random.choice(videos)
-        video_url = "https://www.tiktok.com" + random_video.parent.get("href")
-        video_id = video_url.split("/")[-1]
-        api_url = f"https://www.tiktok.com/node/share/video/{video_id}"
-        
-        response = requests.get(api_url, headers=headers)
-        if response.status_code != 200:
-            response = "Sorry, but there was an error downloading the video"
-            await ctx.send(response)
-            return
-        
-        data = response.json()
-        video_url = data["itemInfo"]["itemStruct"]["video"]["playAddr"]
-        
-        response = requests.get(video_url, stream=True, headers=headers)
-        with open('video.mp4', 'wb') as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        
-        with open('video.mp4', 'rb') as f:
-            file = discord.File(f, filename='video.mp4')
-            caption = data["itemInfo"]["itemStruct"]["desc"]
-            publisher = data["itemInfo"]["itemStruct"]["author"]["nickname"]
-            response = f"{caption}\n\nPublisher: {publisher}"
-            await ctx.send(response, file=file)
-        
-        os.remove('video.mp4')
+        # Download the video and send it to the Discord channel
+        async with self.bot.session.get(video_url) as r:
+            if r.status == 200:
+                fp = await ctx.bot.loop.run_in_executor(None, open, f"{random.randint(1,999999)}.mp4", "wb")
+                fp.write(await r.read())
+                fp.close()
+                await ctx.send(response, file=discord.File(f"{random.randint(1,999999)}.mp4"))
+
+        # Delete the video file after it's been sent
+        await asyncio.sleep(1)
+        await ctx.bot.loop.run_in_executor(None, os.remove, f"{random.randint(1,999999)}.mp4")
+
 
 
