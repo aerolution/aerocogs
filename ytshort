@@ -1,0 +1,77 @@
+import os
+import discord
+import youtube_dl
+from redbot.core import commands
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+class YTShorts(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.yt_api_key = 'YOUR_YOUTUBE_API_KEY'
+
+    @commands.command()
+    async def ytshort(self, ctx, video_id: str):
+        """Downloads and uploads a YouTube Short to Discord."""
+        try:
+            youtube = build('youtube', 'v3', developerKey=self.yt_api_key)
+            video_response = youtube.videos().list(
+                part='snippet',
+                id=video_id
+            ).execute()
+
+            if video_response['items']:
+                video = video_response['items'][0]
+                video_title = video['snippet']['title']
+                channel_title = video['snippet']['channelTitle']
+                published_at = video['snippet']['publishedAt']
+                captions = self.get_captions(youtube, video_id)
+
+                ydl_opts = {
+                    'format': 'best[height<=1080]',
+                    'outtmpl': f'{video_id}.mp4',
+                }
+
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([f'https://www.youtube.com/watch?v={video_id}'])
+
+                with open(f'{video_id}.mp4', 'rb') as f:
+                    await ctx.send(
+                        file=discord.File(f, f'{video_id}.mp4'),
+                        embed=self.create_embed(video_title, channel_title, published_at, captions)
+                    )
+
+                os.remove(f'{video_id}.mp4')
+            else:
+                await ctx.send("Video not found.")
+        except HttpError as e:
+            await ctx.send(f"An error occurred: {e}")
+        except Exception as e:
+            await ctx.send(f"An error occurred: {e}")
+
+    def create_embed(self, video_title, channel_title, published_at, captions):
+        embed = discord.Embed(title=video_title, description=f"Uploaded by {channel_title} on {published_at}")
+        if captions:
+            embed.add_field(name="Captions", value=captions, inline=False)
+        return embed
+
+    def get_captions(self, youtube, video_id):
+        try:
+            caption_response = youtube.captions().list(
+                part='snippet',
+                videoId=video_id
+            ).execute()
+
+            if caption_response['items']:
+                caption_id = caption_response['items'][0]['id']
+                caption = youtube.captions().download(id=caption_id).execute()
+                return caption.decode('utf-8')
+            else:
+                return None
+        except HttpError as e:
+            print(f"An error occurred: {e}")
+            return None
+
+def setup(bot):
+    bot.add_cog(YTShorts(bot))
