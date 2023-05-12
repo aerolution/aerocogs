@@ -1,6 +1,6 @@
 import os
 import tempfile
-import aiohttp
+import httpx
 import discord
 from redbot.core import commands
 from TikTokApi import TikTokApi
@@ -17,9 +17,9 @@ class fyp(commands.Cog):
 
         # Download and send the first video
         video = trending_videos[0]
-        async with aiohttp.ClientSession() as session:
-            async with session.get(video['video']['downloadAddr']) as resp:
-                video_data = await resp.read()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(video['video']['downloadAddr'])
+            video_data = response.content
 
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(video_data)
@@ -39,4 +39,5 @@ class fyp(commands.Cog):
 
 def setup(bot):
     bot.add_cog(fyp(bot))
+
 
