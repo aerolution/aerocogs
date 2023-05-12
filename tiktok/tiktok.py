@@ -5,14 +5,14 @@ import requests
 import random
 from bs4 import BeautifulSoup
 
-class MyCog(commands.Cog):
+class fyp(commands.Cog):
     """Get trending TikTok videos"""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def tiktok(self, ctx):
+    async def fyp(self, ctx):
         """Get the trending TikTok videos"""
         url = "https://www.tiktok.com/en/trending"
         response = requests.get(url)
