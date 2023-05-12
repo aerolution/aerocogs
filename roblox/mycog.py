@@ -7,15 +7,20 @@ class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-
 @commands.command()
 async def rouser(ctx, username):
  
     users_json = requests.get(f"https://www.roblox.com/search/users/results?keyword={username}&maxRows=1&startIndex=0")
     users = json.loads(users_json.text)
+    
     if not users['UserSearchResults']:
         await ctx.send(f"Sorry, no user was found with the username {username}.")
         return
+   
+    if len(users['UserSearchResults']) < 1 :
+        await ctx.send(f"Sorry, no user was found with the username {username}.")
+        return
+ 
     user_id = users['UserSearchResults'][0]['UserId']
  
     profile_json = requests.get(f"https://users.roblox.com/v1/users/{user_id}")
