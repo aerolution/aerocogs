@@ -12,14 +12,14 @@ api = TikTokPy({
 })
 
 class MyCog(commands.Cog):
-    """A custom cog to get trending TikTok videos"""
+    """ A custom cog to get trending TikTok videos """
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def tiktok(self, ctx):
-        """Get the trending TikTok videos"""
+        """ Get the trending TikTok videos """
         print('Executing tiktok command...')
         try:
             # Fetch the trending videos from TikTok API
