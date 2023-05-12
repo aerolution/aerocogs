@@ -1,5 +1,6 @@
-import httpx
-from .tiktok import fyp
+from .tiktok import ftp
 
-def setup(bot):
-    bot.add_cog(fyp(bot))
+
+async def setup(bot):
+    await bot.add_cog(fyp(bot))
+
