@@ -5,7 +5,7 @@ import tempfile
 import aiohttp
 import discord
 from redbot.core import commands
-from tiktok_scraper import TikTokScraper
+from tiktok-scraper import TikTokScraper
 
 class fyp(commands.Cog):
     def __init__(self, bot):
