@@ -1,7 +1,6 @@
-# written by chatgpt LOL     bot.add_cog(fyp(bot))
 import os
 import tempfile
-import aiohttp
+import aiohttp from aiohttp
 import discord
 from redbot.core import commands
 from TikTokApi import TikTokApi
@@ -40,9 +39,3 @@ class fyp(commands.Cog):
 
 def setup(bot):
     bot.add_cog(fyp(bot))
-
-
-
-
-
-
