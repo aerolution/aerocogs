@@ -5,8 +5,8 @@ from tikapi import TikAPI, ValidationException, ResponseException
 class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api = TikAPI("myAPIKey")
-        self.user = self.api.user(accountKey="DemoAccountKeyTokenSeHYGXDfd4SFD320Sc39Asd0Sc39A")
+        self.api = TikAPI("hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS")
+        self.user = self.api.user(accountKey="2y4qLDFxAcxujMjazkQNzQKUhvGv43U1LmSyF6KYOytngcNw")
 
     @commands.command()
     async def videoinfo(self, ctx, video_id: str):
