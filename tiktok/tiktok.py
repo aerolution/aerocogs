@@ -1,34 +1,124 @@
 import discord
-from redbot.core import commands
-from tikapi import TikAPI, ValidationException, ResponseException
+from discord.ext import commands
+from tikapi import TikAPI
 
 class fyp(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = "hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS"
-        self.user_account_key = "2y4qLDFxAcxujMjazkQNzQKUhvGv43U1LmSyF6KYOytngcNw"
+        self.api = TikAPI(account_key="hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS", api_key="2y4qLDFxAcxujMjazkQNzQKUhvGv43U1LmSyF6KYOytngcNw")
 
     @commands.command()
-    async def tiktokuser(self, ctx):
-        """Fetches information about a TikTok user."""
-        try:
-            api = TikAPI(self.api_key)
-            user = api.user(accountKey=self.user_account_key)
-            response = user.info()
-            response_json = response.json()
-            user_info = f"Username: {response_json['itemInfo']['itemStruct']['author']['uniqueId']}\n" \
-                        f"Full Name: {response_json['itemInfo']['itemStruct']['author']['nickname']}\n" \
-                        f"Bio: {response_json['itemInfo']['itemStruct']['author']['signature']}\n" \
-                        f"Following: {response_json['itemInfo']['itemStruct']['stats']['followingCount']}\n" \
-                        f"Followers: {response_json['itemInfo']['itemStruct']['stats']['followerCount']}\n" \
-                        f"Total Likes: {response_json['itemInfo']['itemStruct']['stats']['heartCount']}"
+    async def popular(self, ctx):
+        tiktoks = self.api.popular()
 
-            await ctx.send(user_info)
-        except ValidationException as e:
-            await ctx.send(f"Validation error: {e}, {e.field}")
-        except ResponseException as e:
-            await ctx.send(f"Response error: {e}, {e.response.status_code}")
-        except Exception as e:
-            await ctx.send(f"Error fetching user info: {e}")
+        for tiktok in tiktoks:
+            title = tiktok['author']['uniqueId']
+            description = tiktok['desc']
+            url = tiktok['video']['urls'][0]
+            likes = tiktok['stats']['diggCount']
+            shares = tiktok['stats']['shareCount']
+
+            embed = discord.Embed(title=title, description=description)
+            embed.set_image(url=url)
+            embed.set_footer(text=f"Likes: {likes} | Shares: {shares}")
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def trending(self, ctx, limit=10):
+        tiktoks = self.api.trending(limit=limit)
+
+        for tiktok in tiktoks:
+            title = tiktok['author']['uniqueId']
+            description = tiktok['desc']
+            url = tiktok['video']['urls'][0]
+            likes = tiktok['stats']['diggCount']
+            shares = tiktok['stats']['shareCount']
+
+            embed = discord.Embed(title=title, description=description)
+            embed.set_image(url=url)
+            embed.set_footer(text=f"Likes: {likes} | Shares: {shares}")
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def search(self, ctx, query):
+        tiktoks = self.api.search(query)
+
+        for tiktok in tiktoks:
+            title = tiktok['author']['uniqueId']
+            description = tiktok['desc']
+            url = tiktok['video']['urls'][0]
+            likes = tiktok['stats']['diggCount']
+            shares = tiktok['stats']['shareCount']
+
+            embed = discord.Embed(title=title, description=description)
+            embed.set_image(url=url)
+            embed.set_footer(text=f"Likes: {likes} | Shares: {shares}")
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def like(self, ctx, tiktok_id):
+        self.api.like(tiktok_id)
+        await ctx.send(f"Liked TikTok with ID {tiktok_id}")
+
+    @commands.command()
+    async def follow(self, ctx, user_id):
+        self.api.follow(user_id)
+        await ctx.send(f"Followed user with ID {user_id}")
+
+    @commands.command()
+    async def unfollow(self, ctx, user_id):
+        self.api.unfollow(user_id)
+        await ctx.send(f"Unfollowed user with ID {user_id}")
+
+    @commands.command()
+    async def get_user(self, ctx, user_id):
+        user = self.api.get_user(user_id)
+
+        username = user['uniqueId']
+        bio = user['signature']
+        avatar = user['avatarLarger']
+        following = user['following']
+        followers = user['fans']
+
+        embed = discord.Embed(title=username, description=bio)
+        embed.set_image(url=avatar)
+        embed.set_footer(text=f"Following: {following} | Followers: {followers}")
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def get_tiktok(self, ctx, tiktok_id):
+        tiktok = self.api.get_tiktok(tiktok_id)
+
+        title = tiktok['author']['uniqueId']
+        description = tiktok['desc']
+        url = tiktok['video']['urls'][0]
+        likes = tiktok['stats']['diggCount']
+        shares = tiktok['stats']['shareCount']
+
+        embed = discord.Embed(title=title, description=description)
+        embed.set_image(url=url)
+        embed.set_footer(text=f"Likes: {likes} | Shares: {shares}")
+
+        message = await ctx.send(embed=embed)
+        await message.add_reaction("👍")
+        await message.add_reaction("👎")
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if user.bot:
+            return
+
+        if not reaction.message.embeds:
+            return
+
+        if reaction.emoji == "👍":
+            await self.api.like(reaction.message.id)
+        elif reaction.emoji == "👎":
+            await self.api.dislike(reaction.message.id)
 
 
