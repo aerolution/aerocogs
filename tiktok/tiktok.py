@@ -6,7 +6,7 @@ class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_key = "hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS"
-        self.user_account_key = "DemoAccountKeyTokenSeHYGXDfd4SFD320Sc39Asd0Sc39A"
+        self.user_account_key = "hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS"
 
     @commands.command()
     async def tiktokuser(self, ctx):
