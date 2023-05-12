@@ -1,21 +1,20 @@
-# written by chatgpt LOL
-
+# written by chatgpt LOL     bot.add_cog(fyp(bot))
 import os
 import tempfile
 import aiohttp
 import discord
 from redbot.core import commands
-from tiktok-scraper import TikTokScraper
+from tiktokapi import TikTokApi
 
 class fyp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.scraper = TikTokScraper()
+        self.api = TikTokApi()
 
     @commands.command()
     async def fyp(self, ctx):
         # Fetch trending TikTok videos
-        trending_videos = await self.scraper.trending()
+        trending_videos = self.api.trending(count=1)
 
         # Download and send the first video
         video = trending_videos[0]
@@ -41,6 +40,7 @@ class fyp(commands.Cog):
 
 def setup(bot):
     bot.add_cog(fyp(bot))
+
 
 
 
