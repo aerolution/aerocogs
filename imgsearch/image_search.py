@@ -25,3 +25,5 @@ class ImageSearch(commands.Cog):
         await ctx.send(embed=embed)
 
 def setup(bot):
+    pass
+
