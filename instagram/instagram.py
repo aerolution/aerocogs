@@ -7,7 +7,7 @@ from instagrapi import Client
 from instagrapi.types import Post
 
 
-class Instagram(commands.Cog):
+class ig(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.client = Client()
