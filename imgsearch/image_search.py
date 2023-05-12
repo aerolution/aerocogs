@@ -9,7 +9,7 @@ class ImageSearch(commands.Cog):
     @commands.command(name='img')
     async def image_search(self, ctx, *, query):
         # Replace YOUR_API_KEY with your actual Serpapi API key
-        api_key = '576ca028f79b19f902ece71efb97a754fe748944c6ec67a046a2d291fa39d942'
+        api_key = '576ca028f79b19f902ece71efb97a754fe748944c6ec67046a2d291fa39d942'
         search_engine = 'google'
         search_type = 'images'
         url = f'https://serpapi.com/search.json?q={query}&tbm={search_type}&api_key={api_key}&engine={search_engine}'
