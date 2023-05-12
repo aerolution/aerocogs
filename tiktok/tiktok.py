@@ -1,6 +1,6 @@
 import os
 import tempfile
-import aiohttp from aiohttp
+from aiohttp import aiohttp
 import discord
 from redbot.core import commands
 from TikTokApi import TikTokApi
