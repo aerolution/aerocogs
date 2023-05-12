@@ -6,7 +6,7 @@ from redbot.core import commands
 
 api = TikTokPy()
 
-class MyCog(commands.Cog):
+class fyp(commands.Cog):
     """My custom cog"""
 
     def __init__(self, bot):
