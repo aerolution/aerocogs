@@ -1,0 +1,13 @@
+{
+    "author" : ["aerolution"],
+    "install_msg" : "You've just installed the JAIL cog.",
+    "name" : "Jail",
+    "short" : "View Trending Videos on TikTok",
+    "description" : "View Trending Videos on tiktok using the tiktok.py wrapper.",
+    "required_cogs": {},
+    "requirements": [],
+    "min_bot_version": "3.1.8",
+    "max_bot_version": "0.0.0",
+    "tags": [],
+    "type": "COG"
+}
