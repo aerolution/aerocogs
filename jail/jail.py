@@ -19,6 +19,3 @@ class Jail(commands.Cog):
                 await ctx.send(f"Role with ID {role_id} not found.")
         else:
             await ctx.send(f"This command can only be used in the server with ID {server_id}.")
-
-def setup(bot):
-    bot.add_cog(Jail(bot))
