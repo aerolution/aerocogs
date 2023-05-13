@@ -1,12 +1,13 @@
 from discord.ext import commands
 from discord.utils import get
+import discord
 
 class JailCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def jail(self, ctx, member: commands.MemberConverter):
+    async def jail(self, ctx, member: discord.Member):
         server_id = 1093594511076249701
         role_id = 1098752253449486416
 
