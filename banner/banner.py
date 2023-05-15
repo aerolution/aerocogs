@@ -6,7 +6,7 @@ class Banner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(name="showbanner")
     async def showbanner(self, ctx, member: discord.Member = None):
         if member is None:
             member = ctx.author
