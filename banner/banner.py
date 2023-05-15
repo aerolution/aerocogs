@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from redbot.core import Config, checks, commands
 
 class Banner(commands.Cog):
     def __init__(self, bot):
@@ -48,6 +47,3 @@ class Banner(commands.Cog):
             return guild.banner_url_as(format="png")
         else:
             return None
-
-def setup(bot):
-    bot.add_cog(Banner(bot))
