@@ -1,35 +1,28 @@
 import discord
+import io
+import ttapi
+import aiohttp
 from redbot.core import commands
-from tikapi import TikAPI, ValidationException, ResponseException
 
-class fyp(commands.Cog):
+class TikTokFYP(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api = TikAPI("hnxoYBFNO7uQFUpmRkiPNmb3Rr11YJYerx7clmfc7mHRpPWS")
-        self.user = self.api.user(accountKey="2y4qLDFxAcxujMjazkQNzQKUhvGv43U1LmSyF6KYOytngcNw")
+        self.api = ttapi.TikTokAPI()
 
-    @commands.command()
-    async def videoinfo(self, ctx, video_id: str):
-        """Fetches video information from TikTok."""
+    @commands.command(name="fyp")
+    async def fyp(self, ctx):
         try:
-            response = self.user.posts.video(id=video_id)
-            video_info = response.json()
-            await ctx.send(video_info)
-            if "id" in video_info:
-                embed = discord.Embed(title="TikTok Video Information")
-                embed.add_field(name="Video ID", value=video_info["id"], inline=False)
-                embed.add_field(name="Description", value=video_info["desc"], inline=False)
-                embed.add_field(name="Likes", value=video_info["stats"]["diggCount"], inline=True)
-                embed.add_field(name="Shares", value=video_info["stats"]["shareCount"], inline=True)
-                embed.add_field(name="Comments", value=video_info["stats"]["commentCount"], inline=True)
-                embed.add_field(name="Plays", value=video_info["stats"]["playCount"], inline=True)
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send("Video information not found.")
-        except ValidationException as e:
-            await ctx.send(f"Validation error: {e}, field: {e.field}")
-        except ResponseException as e:
-            await ctx.send(f"Response error: {e}, status code: {e.response.status_code}")
+            async with ctx.channel.typing():
+                tiktok = self.api.get_trending(count=1)
+                video_data = tiktok[0]
+                video_url = video_data.video_url
+                video_caption = video_data.caption
+                video_author = f"{video_data.author.nickname} (@{video_data.author.unique_id})"
+                video_stats = f"{video_data.stats.likes:,} 👍 | {video_data.stats.comments:,} 💬 | {video_data.stats.views:,} 👀 ({video_data.stats.shares:,} 🔗)"
 
-def setup(bot):
-    bot.add_cog(TikTok(bot))
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(video_url) as response:
+                        video_bytes = io.BytesIO(await response.read())
+
+                embed = discord.Embed(color=discord.Color.random(), description=f"**[{video_caption}]({video_url})**")
+                embed.set_author(name=video_author, icon_url=video_data.author.avatar_url)
