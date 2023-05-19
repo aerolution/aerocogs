@@ -25,4 +25,4 @@ class TikTokFYP(commands.Cog):
                         video_bytes = io.BytesIO(await response.read())
 
                 embed = discord.Embed(color=discord.Color.random(), description=f"**[{video_caption}]({video_url})**")
-                embed.set_author(name=video_author, icon_url=video_data.author.avatar_url)
+                embed.set_footer(text=video_stats)
