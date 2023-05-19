@@ -1,4 +1,4 @@
-from .tiktok import fyp
+from .tiktok import TikTokFYP
 
 
 async def setup(bot):
