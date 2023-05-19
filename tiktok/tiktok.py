@@ -1,28 +1,34 @@
 import discord
-import io
-import ttapi
-import aiohttp
 from redbot.core import commands
+from ttapi import TikTokApi
 
 class TikTokFYP(commands.Cog):
+    """Gets a random video from TikTok's For You Page"""
+
     def __init__(self, bot):
         self.bot = bot
-        self.api = ttapi.TikTokAPI()
 
-    @commands.command(name="fyp")
-    async def fyp(self, ctx):
-        try:
-            async with ctx.channel.typing():
-                tiktok = self.api.get_trending(count=1)
-                video_data = tiktok[0]
-                video_url = video_data.video_url
-                video_caption = video_data.caption
-                video_author = f"{video_data.author.nickname} (@{video_data.author.unique_id})"
-                video_stats = f"{video_data.stats.likes:,} 👍 | {video_data.stats.comments:,} 💬 | {video_data.stats.views:,} 👀 ({video_data.stats.shares:,} 🔗)"
+    @commands.command()
+    async def tiktokfyp(self, ctx):
+        """Gets a random video from TikTok's For You Page"""
+        api = TikTokApi()
+        results = api.trending()
+        video = results[0]
 
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(video_url) as response:
-                        video_bytes = io.BytesIO(await response.read())
+        embed = discord.Embed(title=f"{video['text']}", url=f"https://www.tiktok.com/@{video['author']['uniqueId']}/video/{video['id']}")
+        
+        # Set thumbnail
+        embed.set_thumbnail(url=video["author"]["avatarThumb"])
+        
+        # Add author attribution
+        embed.set_author(name=video["author"]["uniqueId"], url=f"https://www.tiktok.com/@{video['author']['uniqueId']}")
+        
+        # Set video views and likes
+        embed.add_field(name="Views", value=f"{video['stats']['playCount']:,}")
+        embed.add_field(name="Likes", value=f"{video['stats']['diggCount']:,}")
+        
+        # Set image
+        embed.set_image(url=video["video"]["originCover"])
+        
+        await ctx.send(embed=embed)
 
-                embed = discord.Embed(color=discord.Color.random(), description=f"**[{video_caption}]({video_url})**")
-                embed.set_footer(text=video_stats)
