@@ -51,7 +51,7 @@ class Jail(commands.Cog):
             await channel.set_permissions(member, send_messages=False, view_channel=False)
 
         # Allow send messages permission only in the jail channel
-        await jail_channel.set_permissions(member, send_messages=True)
+        await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
         # Create an embed message
         embed = discord.Embed(title="User Jailed", color=discord.Color.red())
