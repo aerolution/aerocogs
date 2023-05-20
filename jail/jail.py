@@ -3,6 +3,10 @@ from redbot.core import commands, Config
 
 
 class Jail(commands.Cog):
+    """
+    Put users in a jail! (Channel.)
+    """
+        
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567890)
@@ -92,3 +96,6 @@ class Jail(commands.Cog):
 
         # Notify the jail log channel
         await self.notify_log_channel(ctx.guild, f"{member.mention} has been unjailed for {reason} by {author.mention}.")
+        
+        jail.help_category = "Moderation"  # Replace with the appropriate category name
+        jail.help_doc = "Jail a user and restrict them to a single specified channel."
