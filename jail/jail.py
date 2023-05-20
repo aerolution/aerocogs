@@ -24,11 +24,15 @@ class Jail(commands.Cog):
             await ctx.send("Jail channel not found. Please set a valid channel using `setjailchannel` command.")
             return
 
-        overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
-            member: discord.PermissionOverwrite(send_messages=True)
-        }
-        await jail_channel.set_permissions(member, overwrite=overwrites, reason=reason)
+        default_role = ctx.guild.default_role
+        default_role_overwrite = jail_channel.overwrites_for(default_role)
+        default_role_overwrite.send_messages = False
+
+        member_overwrite = jail_channel.overwrites_for(member)
+        member_overwrite.send_messages = True
+
+        await jail_channel.set_permissions(default_role, overwrite=default_role_overwrite, reason=reason)
+        await jail_channel.set_permissions(member, overwrite=member_overwrite, reason=reason)
         await ctx.send(f"{member.mention} has been jailed for {reason}.")
 
     @commands.guild_only()
