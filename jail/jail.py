@@ -39,6 +39,9 @@ class Jail(commands.Cog):
         """Jail a user and restrict them to a single specified channel."""
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
+       
+        # get author
+        author = ctx.message.author
 
         # Get all channels in the guild
         channels = ctx.guild.channels
