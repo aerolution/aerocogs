@@ -1,4 +1,4 @@
-from .jail import JailCog
+from .jail import Jail
 
-await def setup(bot):
-    bot.add_cog(JailCog(bot))
+async def setup(bot):
+    bot.add_cog(Jail(bot))
