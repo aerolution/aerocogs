@@ -69,12 +69,15 @@ class Jail(commands.Cog):
             return
 
         await jail_channel.set_permissions(member, overwrite=None, reason=reason)
-
+        
+        # message author
+        author = ctx.message.author
+        
         # Create an embed message
         embed = discord.Embed(title="User Unjailed", color=discord.Color.green())
         embed.add_field(name="User", value=member.mention, inline=False)
         embed.add_field(name="Reason", value=reason, inline=False)
-        embed.set_footer(text=f"Unjailed by {ctx.author}", icon_url=ctx.message.author.avatar_url)
+        embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar_url)
 
         # Send the embed message to the context channel
         await ctx.send(embed=embed)
