@@ -1,5 +1,7 @@
 {
-  "author": "kat",
+  "author": [
+        "kat(katlyn#0001)"
+    ],
   "name": "Jail",
   "short": "A jail cog for Red-DiscordBot 3.5.2",
   "description": "This cog allows server administrators to jail users, restricting them to a single specified channel.",
