@@ -25,8 +25,8 @@ class Jail(commands.Cog):
             return
 
         overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            member: discord.PermissionOverwrite(read_messages=True)
+            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
+            member: discord.PermissionOverwrite(send_messages=True)
         }
         await jail_channel.set_permissions(member, overwrite=overwrites, reason=reason)
         await ctx.send(f"{member.mention} has been jailed for {reason}.")
