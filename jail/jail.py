@@ -12,7 +12,7 @@ class Jail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, member: discord.Member, reason: str):
+    async def jail(self, ctx, member: discord.Member, *, reason: str):
         """Jail a user and restrict them to a single specified channel."""
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         if not jail_channel_id:
@@ -28,7 +28,7 @@ class Jail(commands.Cog):
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             member: discord.PermissionOverwrite(read_messages=True)
         }
-        await jail_channel.edit(overwrites=overwrites)
+        await jail_channel.set_permissions(member, overwrite=overwrites, reason=reason)
         await ctx.send(f"{member.mention} has been jailed for {reason}.")
 
     @commands.guild_only()
