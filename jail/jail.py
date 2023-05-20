@@ -45,7 +45,7 @@ class Jail(commands.Cog):
         embed = discord.Embed(title="User Jailed", color=discord.Color.red())
         embed.add_field(name="User", value=member.mention, inline=False)
         embed.add_field(name="Reason", value=reason, inline=False)
-        embed.set_footer(text=f"Jailed by {ctx.author}", icon_url=ctx.message.author.avatar_url)
+        embed.set_footer(text=f"Jailed by {ctx.author}", icon_url=ctx.message.author.avatar)
 
         # Send the embed message to the context channel
         await ctx.send(embed=embed)
@@ -77,7 +77,7 @@ class Jail(commands.Cog):
         embed = discord.Embed(title="User Unjailed", color=discord.Color.green())
         embed.add_field(name="User", value=member.mention, inline=False)
         embed.add_field(name="Reason", value=reason, inline=False)
-        embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar_url)
+        embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar)
 
         # Send the embed message to the context channel
         await ctx.send(embed=embed)
