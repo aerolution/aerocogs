@@ -65,7 +65,7 @@ class Jail(commands.Cog):
             embed.add_field(name="Reason", value=reason, inline=False)
         if time:
             embed.add_field(name="Time", value=f"{time} seconds", inline=False)
-        embed.set_footer(text=f"Jailed by {author}", icon_url=author.avatar_url)
+        embed.set_footer(text=f"Jailed by {author}", icon_url=author.avatar)
 
         # Send the embed message to the context channel
         await ctx.send(embed=embed)
@@ -98,7 +98,7 @@ class Jail(commands.Cog):
         # Get the actual command author
         author = ctx.message.author
 
-        embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar_url)
+        embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar)
 
         # Send the embed message to the context channel
         await ctx.send(embed=embed)
