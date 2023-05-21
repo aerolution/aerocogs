@@ -1,13 +1,11 @@
- {
-    "author" : ["aerolution"],
-    "install_msg" : "You've just installed the ROBLOX cog.",
-    "name" : "Roblox",
-    "short" : "View Roblox Players",
-    "description" : "View Roblox Player userinfo..",
-    "required_cogs": {},
-    "requirements": [],
-    "min_bot_version": "3.1.8",
-    "max_bot_version": "0.0.0",
-    "tags": [],
-    "type": "COG"
+{
+    "author": ["katlyn"],
+    "bot_version_requirement": "3.5.2",
+    "description": "A Roblox cog for Red-DiscordBot that provides various Roblox-related commands.",
+    "install_msg": "Thanks for installing the Roblox cog!",
+    "name": "Roblox",
+    "short": "Roblox cog for Red-DiscordBot",
+    "tags": ["roblox", "discord", "bot", "cog"],
+    "type": "cog",
+    "version": "1.0.0"
 }
