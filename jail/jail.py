@@ -75,6 +75,8 @@ class Jail(commands.Cog):
         if time:
             embed.add_field(name="Time", value=f"{time} seconds", inline=False)
         embed.set_footer(text=f"Jailed by {author}", icon_url=author.avatar)
+        
+        await ctx.send(embed)
 
         # Send the embed message to the user or jail channel
         await self.notify_user(member, embed)
@@ -108,6 +110,8 @@ class Jail(commands.Cog):
         author = ctx.message.author
 
         embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar)
+        
+        await ctx.send(embed)
 
         # Send the embed message to the user or jail channel
         await self.notify_user(member, embed)
