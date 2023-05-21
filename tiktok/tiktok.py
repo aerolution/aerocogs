@@ -1,23 +1,30 @@
+import discord
 from redbot.core import commands
+from tiktokapipy.async_api import AsyncTikTokAPI
+import aiohttp
+import io
+
 
 class TikTok(commands.Cog):
-    """My custom cog"""
-
     def __init__(self, bot):
         self.bot = bot
+        self.api = AsyncTikTokAPI()
 
     @commands.command()
-    async def mycom(self, ctx):
-        """Tiktok!"""
-        # Your code will go here
-        await ctx.send("I can do stuff!")
+    async def trending(self, ctx):
+        challenge_name = "fyp"
+        count = self.api.challenge.video_limit
+        challenge_data = await self.api.challenge(challenge_name, count=1)
+        video = challenge_data['items'][0]
 
+        async with aiohttp.ClientSession() as session:
+            async with session.get(video['video']['download_addr']) as resp:
+                video_data = await resp.read()
 
-# def do_something():
-  #  with TikTokAPI() as api:
-      #  user = api.user(username)
-       # for video in user.videos:
-        #    num_comments = video.stats.comment_count
-        #    num_likes = video.stats.digg_count
-      #      num_views = video.stats.play_count
-          #  num_shares = video.stats.share_count
+        video_file = discord.File(io.BytesIO(video_data), filename="trending_tiktok.mp4")
+
+        embed = discord.Embed(title=video['desc'], color=discord.Color.blue())
+        embed.set_author(name=f"@{video['author']['unique_id']}", icon_url=video['author']['avatar_thumb'])
+        embed.set_footer(text=f"Uploaded on {video['create_time']}")
+
+        await ctx.send(file=video_file, embed=embed)
