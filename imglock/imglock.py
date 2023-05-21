@@ -13,9 +13,14 @@ class ImgLock(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.command()
     async def imglock(self, ctx, channel: discord.TextChannel):
-        """Set the channel to restrict to image-only messages."""
-        await self.config.guild(ctx.guild).imglock_channel.set(channel.id)
-        await ctx.send(f"The image lock channel has been set to {channel.mention}.")
+        """Toggle the image lock on or off for the specified channel."""
+        current_imglock_channel_id = await self.config.guild(ctx.guild).imglock_channel()
+        if current_imglock_channel_id == channel.id:
+            await self.config.guild(ctx.guild).imglock_channel.set(None)
+            await ctx.send(f"The image lock has been removed from {channel.mention}.")
+        else:
+            await self.config.guild(ctx.guild).imglock_channel.set(channel.id)
+            await ctx.send(f"The image lock channel has been set to {channel.mention}.")
 
     @commands.Cog.listener()
     async def on_message(self, message):
