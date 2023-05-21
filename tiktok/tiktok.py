@@ -11,28 +11,19 @@ import aiohttp
 from tiktokapipy.async_api import AsyncTikTokAPI
 from tiktokapipy.models.video import Video
 
-async def do_something():
-    async with AsyncTikTokAPI() as api:
-        challenge = await api.challenge(tag_name)
-        async for video in challenge.videos:
-            link = video(link)
-            
 directory = "/root/tikdata"
 
 async def save_slideshow(video: Video):
-    # this filter makes sure the images are padded to all the same size
     vf = "\"scale=iw*min(1080/iw\,1920/ih):ih*min(1080/iw\,1920/ih)," \
-         "pad=1080:1920:(1080-iw)/2:(1920-ih)/2," \
+         "pad=1080:1920:(0-iw)/2:(1920-ih)/2," \
          "format=yuv420p\""
 
     for i, image_data in enumerate(video.image_post.images):
         url = image_data.image_url.url_list[-1]
-        # this step could probably be done with asyncio, but I didn't want to figure out how
         urllib.request.urlretrieve(url, path.join(directory, f"temp_{video.id}_{i:02}.jpg"))
 
     urllib.request.urlretrieve(video.music.play_url, path.join(directory, f"temp_{video.id}.mp3"))
 
-    # use ffmpeg to join the images and audio
     command = [
         "ffmpeg",
         "-r 2/5",
@@ -54,8 +45,6 @@ async def save_slideshow(video: Video):
     generated_files = glob.glob(path.join(directory, f"temp_{video.id}*"))
 
     if not path.exists(path.join(directory, f"temp_{video.id}.mp4")):
-        # optional ffmpeg logging step
-        # logging.error(stderr.decode("utf-8"))
         for file in generated_files:
             os.remove(file)
         raise Exception("Something went wrong with piecing the slideshow together")
@@ -73,7 +62,7 @@ async def save_video(video: Video):
         async with session.get(video.video.download_addr) as resp:
             return io.BytesIO(await resp.read())
 
-async def download_video():
+async def download_video(link):
     async with AsyncTikTokAPI() as api:
         video: Video = await api.video(link)
         if video.image_post:
@@ -81,8 +70,7 @@ async def download_video():
         else:
             downloaded = await save_video(video)
 
-        # do something with the downloaded video (save it, send it, whatever you want).
-
+        return downloaded
 
 class TikTok(commands.Cog):
     def __init__(self, bot):
@@ -90,20 +78,10 @@ class TikTok(commands.Cog):
         self.api = AsyncTikTokAPI()
 
     @commands.command()
-    async def trending(self, ctx):
-        challenge_name = "fyp"
-        count = self.api.challenge.video_limit
-        challenge_data = await self.api.challenge(challenge_name, count=1)
-        video = challenge_data['items'][0]
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(video['video']['download_addr']) as resp:
-                video_data = await resp.read()
-
-        video_file = discord.File(io.BytesIO(video_data), filename="trending_tiktok.mp4")
-
-        embed = discord.Embed(title=video['desc'], color=discord.Color.blue())
-        embed.set_author(name=f"@{video['author']['unique_id']}", icon_url=video['author']['avatar_thumb'])
-        embed.set_footer(text=f"Uploaded on {video['create_time']}")
-
-        await ctx.send(file=video_file, embed=embed)
+    async def fetchvideo(self, ctx, video_url: str):
+        try:
+            video_data = await download_video(video_url)
+            video_file = discord.File(video_data, filename="tiktok_video.mp4")
+            await ctx.send(file=video_file)
+        except Exception as e:
+            await ctx.send(f"Error fetching video: {e}")
