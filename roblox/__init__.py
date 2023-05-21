@@ -1,5 +1,4 @@
-from .mycog import MyCog
-
+from .roblox import Roblox
 
 async def setup(bot):
-    await bot.add_cog(MyCog(bot))
+  await bot.add_cog(Roblox(bot))
