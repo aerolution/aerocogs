@@ -1,34 +1,23 @@
-import discord
 from redbot.core import commands
-from ttapi import TikTokApi
 
-class TikTokFYP(commands.Cog):
-    """Gets a random video from TikTok's For You Page"""
+class TikTok(commands.Cog):
+    """My custom cog"""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def tiktokfyp(self, ctx):
-        """Gets a random video from TikTok's For You Page"""
-        api = TikTokApi()
-        results = api.trending()
-        video = results[0]
+    async def mycom(self, ctx):
+        """Tiktok!"""
+        # Your code will go here
+        await ctx.send("I can do stuff!")
 
-        embed = discord.Embed(title=f"{video['text']}", url=f"https://www.tiktok.com/@{video['author']['uniqueId']}/video/{video['id']}")
-        
-        # Set thumbnail
-        embed.set_thumbnail(url=video["author"]["avatarThumb"])
-        
-        # Add author attribution
-        embed.set_author(name=video["author"]["uniqueId"], url=f"https://www.tiktok.com/@{video['author']['uniqueId']}")
-        
-        # Set video views and likes
-        embed.add_field(name="Views", value=f"{video['stats']['playCount']:,}")
-        embed.add_field(name="Likes", value=f"{video['stats']['diggCount']:,}")
-        
-        # Set image
-        embed.set_image(url=video["video"]["originCover"])
-        
-        await ctx.send(embed=embed)
 
+# def do_something():
+  #  with TikTokAPI() as api:
+      #  user = api.user(username)
+       # for video in user.videos:
+        #    num_comments = video.stats.comment_count
+        #    num_likes = video.stats.digg_count
+      #      num_views = video.stats.play_count
+          #  num_shares = video.stats.share_count
