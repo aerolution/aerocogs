@@ -21,6 +21,15 @@ class Jail(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
 
+    async def notify_user(self, member, embed):
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            jail_channel_id = await self.config.guild(member.guild).jail_channel()
+            jail_channel = member.guild.get_channel(jail_channel_id)
+            if jail_channel:
+                await jail_channel.send(embed=embed)
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -67,8 +76,8 @@ class Jail(commands.Cog):
             embed.add_field(name="Time", value=f"{time} seconds", inline=False)
         embed.set_footer(text=f"Jailed by {author}", icon_url=author.avatar)
 
-        # Send the embed message to the context channel
-        await ctx.send(embed=embed)
+        # Send the embed message to the user or jail channel
+        await self.notify_user(member, embed)
 
         # Notify the jail log channel
         await self.notify_log_channel(ctx.guild, embed)
@@ -100,8 +109,8 @@ class Jail(commands.Cog):
 
         embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar)
 
-        # Send the embed message to the context channel
-        await ctx.send(embed=embed)
+        # Send the embed message to the user or jail channel
+        await self.notify_user(member, embed)
 
         # Notify the jail log channel
         await self.notify_log_channel(ctx.guild, embed)
