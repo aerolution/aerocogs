@@ -1,0 +1,8 @@
+{
+    "author": ["kat"],
+    "name": "ImgLock",
+    "short": "Restrict a channel to image-only messages.",
+    "description": "This cog allows you to restrict a channel to only allow messages with image attachments. Great for a selfies channel!",
+    "version": "1.0.0",
+    "end_user_data_statement": "This cog does not store any user data."
+}
