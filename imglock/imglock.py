@@ -13,7 +13,7 @@ class ImgLock(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.command()
     async def imglock(self, ctx, channel: discord.TextChannel):
-        """Toggle the image lock on or off for the specified channel."""
+        """Toggle image lock on or off for the specified channel."""
         current_imglock_channel_id = await self.config.guild(ctx.guild).imglock_channel()
         if current_imglock_channel_id == channel.id:
             await self.config.guild(ctx.guild).imglock_channel.set(None)
@@ -24,7 +24,7 @@ class ImgLock(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author.bot or not message.guild:
             return
 
         imglock_channel_id = await self.config.guild(message.guild).imglock_channel()
