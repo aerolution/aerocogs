@@ -1,7 +1,8 @@
 import discord
 from redbot.core import commands, Config
 import asyncio
-
+import re
+from datetime import timedelta
 
 class Jail(commands.Cog):
     """
@@ -30,6 +31,39 @@ class Jail(commands.Cog):
             if jail_channel:
                 await jail_channel.send(embed=embed)
 
+    def parse_time(self, time_str):
+        time_regex = r"(\d+)([smhd])"  # seconds, minutes, hours, days
+        matches = re.findall(time_regex, time_str)
+        if matches:
+            total_seconds = 0
+            for value, unit in matches:
+                if unit == "s":
+                    total_seconds += int(value)
+                elif unit == "m":
+                    total_seconds += int(value) * 60
+                elif unit == "h":
+                    total_seconds += int(value) * 3600
+                elif unit == "d":
+                    total_seconds += int(value) * 86400
+            return total_seconds
+        return None
+
+    def format_timedelta(self, seconds):
+        delta = timedelta(seconds=seconds)
+        days = delta.days
+        hours, remainder = divmod(delta.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        time_parts = []
+        if days:
+            time_parts.append(f"{days}d")
+        if hours:
+            time_parts.append(f"{hours}h")
+        if minutes:
+            time_parts.append(f"{minutes}m")
+        if seconds:
+            time_parts.append(f"{seconds}s")
+        return " ".join(time_parts)
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -49,13 +83,13 @@ class Jail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, member: discord.Member, reason: str = None, time: int = None):
+    async def jail(self, ctx, member: discord.Member, *, reason: commands.clean_content = None):
         """Jail a user and restrict them to a single specified channel."""
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
 
-        # get author
-        author = ctx.message.author
+        # Get author
+        author = ctx.author
 
         # Get all channels in the guild
         channels = ctx.guild.channels
@@ -72,10 +106,15 @@ class Jail(commands.Cog):
         embed.add_field(name="User", value=member.mention, inline=False)
         if reason:
             embed.add_field(name="Reason", value=reason, inline=False)
-        if time:
-            embed.add_field(name="Time", value=f"{time} seconds", inline=False)
+
+        # Parse the jail time if provided
+        jail_time = self.parse_time(reason)
+        if jail_time:
+            formatted_time = self.format_timedelta(jail_time)
+            embed.add_field(name="Jail Time", value=formatted_time, inline=False)
+
         embed.set_footer(text=f"Jailed by {author}", icon_url=author.avatar)
-        
+
         await ctx.send(embed=embed)
 
         # Send the embed message to the user or jail channel
@@ -84,8 +123,8 @@ class Jail(commands.Cog):
         # Notify the jail log channel
         await self.notify_log_channel(ctx.guild, embed)
 
-        if time:
-            await asyncio.sleep(time)
+        if jail_time:
+            await asyncio.sleep(jail_time)
             await self.unjail(ctx, member, reason="Time served")
 
     @commands.guild_only()
@@ -107,10 +146,10 @@ class Jail(commands.Cog):
             embed.add_field(name="Reason", value=reason, inline=False)
 
         # Get the actual command author
-        author = ctx.message.author
+        author = ctx.author
 
         embed.set_footer(text=f"Unjailed by {author}", icon_url=author.avatar)
-        
+
         await ctx.send(embed=embed)
 
         # Send the embed message to the user or jail channel
