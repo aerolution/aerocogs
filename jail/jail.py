@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime, timedelta
 
 class JailView(discord.ui.View):
-    async def __init__(self, member, reason, jail_time):
+    def __init__(self, member, reason, jail_time):
         super().__init__()
         self.member = member
         self.reason = reason
