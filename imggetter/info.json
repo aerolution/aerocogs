@@ -1,0 +1,18 @@
+{
+  "author": [
+        "kat(katlyn#0001)"
+    ],
+  "name": "ImgGetter",
+  "short": "A PFP Grabbimg cog for Red-DiscordBot 3.5.2",
+  "description": "This cog allows server administrators to set a pfp channel, where users can get pfps!",
+  "version": "1.0.0",
+  "min_bot_version": "3.5.2",
+  "max_bot_version": "3.5.2",
+  "hidden": false,
+  "install_msg": "Thank you for installing the PFP cog!",
+  "required_cogs": {},
+  "requirements": [],
+  "tags": ["pinterest", "pfp", "discord"],
+  "type": "COG",
+  "end_user_data_statement": "This cog does not store any end user data."
+}
