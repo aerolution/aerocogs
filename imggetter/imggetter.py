@@ -2,18 +2,19 @@ import discord
 from discord.ext import commands, tasks
 import aiohttp
 import random
+import asyncio
 
 class PfpGetter(commands.Cog):
-    async def __init__(self, bot):
-        await self.bot = bot
-        await self.pfp_channel_id = None
-        await self.banner_channel_id = None
-        await self.pfp_keywords = ['discord pfp', 'aesthetic', 'egirl']
-        await self.banner_keywords = ['banner', 'discord banner']
-        await self.send_pfp.start()
-        await self.send_banner.start()
+    def __init__(self, bot):
+        self.bot = bot
+        self.pfp_channel_id = None
+        self.banner_channel_id = None
+        self.pfp_keywords = ['discord pfp', 'aesthetic', 'egirl']
+        self.banner_keywords = ['banner', 'discord banner']
+        self.send_pfp.start()
+        self.send_banner.start()
 
-    async def cog_unload(self):
+    def cog_unload(self):
         self.send_pfp.cancel()
         self.send_banner.cancel()
 
@@ -59,3 +60,7 @@ class PfpGetter(commands.Cog):
     async def set_banner_channel(self, ctx, channel: discord.TextChannel):
         self.banner_channel_id = channel.id
         await ctx.send(f'Banner channel set to {channel.mention}')
+
+    async def cog_check(self, ctx):
+        # Check if the user is an admin
+        return ctx.author.guild_permissions.administrator
