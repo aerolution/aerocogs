@@ -4,7 +4,7 @@ import aiohttp
 import random
 
 class PfpGetter(commands.Cog):
-    def __init__(self, bot):
+    async def __init__(self, bot):
         self.bot = bot
         self.pfp_channel_id = None
         self.banner_channel_id = None
