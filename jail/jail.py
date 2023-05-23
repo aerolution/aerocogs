@@ -121,9 +121,9 @@ class Jail(commands.Cog):
         embed.add_field(name="User", value=member.mention, inline=False)
         embed.add_field(name="Jailed In", value=jail_channel.mention, inline=False)
         embed.add_field(name="Jailed At", value=ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=False)
+        embed.set_footer(text=f"Jailed by: {author}", icon_url=author.display_avatar)
         if formatted_reason:
             embed.add_field(name="Reason", value=formatted_reason, inline=False)
-            embed.set_footer(text=f"Jailed by: {author}", icon_url=author.display_avatar)
 
         await ctx.send(embed=embed)
 
@@ -152,6 +152,7 @@ class Jail(commands.Cog):
         # Create an embed message
         embed = discord.Embed(title="User was Unjailed!", color=discord.Color.green())
         embed.add_field(name="User", value=member.mention, inline=False)
+        embed.add_field(name="Unjailed At", value=ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=False)
         if reason:
             embed.add_field(name="Reason", value=reason, inline=False)
 
