@@ -59,6 +59,3 @@ class PfpGetter(commands.Cog):
     async def set_banner_channel(self, ctx, channel: discord.TextChannel):
         self.banner_channel_id = channel.id
         await ctx.send(f'Banner channel set to {channel.mention}')
-
-async def setup(bot):
-    await bot.add_cog(PfpGetter(bot))
