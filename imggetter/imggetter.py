@@ -5,13 +5,13 @@ import random
 
 class PfpGetter(commands.Cog):
     async def __init__(self, bot):
-        self.bot = bot
-        self.pfp_channel_id = None
-        self.banner_channel_id = None
-        self.pfp_keywords = ['discord pfp', 'aesthetic', 'egirl']
-        self.banner_keywords = ['banner', 'discord banner']
-        self.send_pfp.start()
-        self.send_banner.start()
+        await self.bot = bot
+        await self.pfp_channel_id = None
+        await self.banner_channel_id = None
+        await self.pfp_keywords = ['discord pfp', 'aesthetic', 'egirl']
+        await self.banner_keywords = ['banner', 'discord banner']
+        await self.send_pfp.start()
+        await self.send_banner.start()
 
     async def cog_unload(self):
         self.send_pfp.cancel()
