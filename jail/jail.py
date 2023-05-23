@@ -1,4 +1,7 @@
 import discord
+from discord_slash import SlashCommand, SlashContext, ButtonStyle
+from discord_slash.utils.manage_commands import create_option
+from discord_slash.model import SlashCommandOptionType
 from redbot.core import commands, Config
 import asyncio
 import re
@@ -14,6 +17,7 @@ class Jail(commands.Cog):
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {"jail_channel": None, "jail_log_channel": None}
         self.config.register_guild(**default_guild)
+        self.slash = SlashCommand(bot, override_type=True)
 
     async def notify_log_channel(self, guild, embed):
         log_channel_id = await self.config.guild(guild).jail_log_channel()
@@ -80,12 +84,31 @@ class Jail(commands.Cog):
         await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
         await ctx.send(f"The jail log channel has been set to {channel.mention}.")
 
+    async def confirm_action(self, ctx, member, action):
+        confirm_embed = discord.Embed(title=f"Are you sure you want to {action} this user?", color=discord.Color.orange())
+        confirm_message = await ctx.send(embed=confirm_embed, components=[
+            Button(style=ButtonStyle.green, label="Yes"),
+            Button(style=ButtonStyle.red, label="No")
+        ])
+
+        def check(confirm_ctx):
+            return confirm_ctx.author == ctx.author and confirm_ctx.channel == ctx.channel and confirm_ctx.message == confirm_message
+
+        try:
+            confirm_ctx = await self.bot.wait_for("button_click", check=check, timeout=30)
+            if confirm_ctx.component.label == "Yes":
+                return True
+            else:
+                return False
+        except asyncio.TimeoutError:
+            return False
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
     async def jail(self, ctx, member: discord.Member, *, reason: commands.clean_content = ""):
         """Jail a user and restrict them to a single specified channel.
-        
+
         You can optionally specify a jail time after the reason. Examples:
         !jail @user being bad for 1h
         !jail @user spamming for 30m
@@ -125,13 +148,15 @@ class Jail(commands.Cog):
         if formatted_reason:
             embed.add_field(name="Reason", value=formatted_reason, inline=False)
 
-        await ctx.send(embed=embed)
-
-        # Send the embed message to the user or jail channel
-        await self.notify_user(member, embed)
-
-        # Notify the jail log channel
-        await self.notify_log_channel(ctx.guild, embed)
+        confirmation = await self.confirm_action(ctx, member, "jail")
+        if confirmation:
+            await ctx.send(embed=embed)
+            # Send the embed message to the user or jail channel
+            await self.notify_user(member, embed)
+            # Notify the jail log channel
+            await self.notify_log_channel(ctx.guild, embed)
+        else:
+            await ctx.send("The jail action has been canceled.")
 
         if jail_time:
             await asyncio.sleep(jail_time)
@@ -161,10 +186,56 @@ class Jail(commands.Cog):
 
         embed.set_footer(text=f"Unjailed by: {author}", icon_url=author.display_avatar)
 
-        await ctx.send(embed=embed)
+        confirmation = await self.confirm_action(ctx, member, "unjail")
+        if confirmation:
+            await ctx.send(embed=embed)
+            # Send the embed message to the user or jail channel
+            await self.notify_user(member, embed)
+            # Notify the jail log channel
+            await self.notify_log_channel(ctx.guild, embed)
+        else:
+            await ctx.send("The unjail action has been canceled.")
 
-        # Send the embed message to the user or jail channel
-        await self.notify_user(member, embed)
+    @slash.slash(
+        name="jail",
+        description="Jail a user and restrict them to a single specified channel",
+        options=[
+            create_option(
+                name="member",
+                description="The member to jail",
+                option_type=SlashCommandOptionType.USER,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="Reason for jailing",
+                option_type=SlashCommandOptionType.STRING,
+                required=False
+            )
+        ]
+    )
+    async def _jail(self, ctx: SlashContext, member: discord.Member, reason: str = ""):
+        """Slash command version of the jail command"""
+        await self.jail(ctx, member, reason)
 
-        # Notify the jail log channel
-        await self.notify_log_channel(ctx.guild, embed)
+    @slash.slash(
+        name="unjail",
+        description="Unjail a user and restore their permissions",
+        options=[
+            create_option(
+                name="member",
+                description="The member to unjail",
+                option_type=SlashCommandOptionType.USER,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="Reason for unjailing",
+                option_type=SlashCommandOptionType.STRING,
+                required=False
+            )
+        ]
+    )
+    async def _unjail(self, ctx: SlashContext, member: discord.Member, reason: str = None):
+        """Slash command version of the unjail command"""
+        await self.unjail(ctx, member, reason=reason)
