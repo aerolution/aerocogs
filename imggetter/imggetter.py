@@ -13,7 +13,7 @@ class PfpGetter(commands.Cog):
         self.send_pfp.start()
         self.send_banner.start()
 
-  async def cog_unload(self):
+    async def cog_unload(self):
         self.send_pfp.cancel()
         self.send_banner.cancel()
 
