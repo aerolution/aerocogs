@@ -285,7 +285,7 @@ class Jail(commands.Cog):
         embed.add_field(name="Jailed At", value=ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=False)
         if formatted_reason:
             embed.add_field(name="Reason", value=formatted_reason, inline=False)
-            embed.set_footer(text=f"Jailed by: {author}", icon_url=author.avatar_url_as(static_format='png', size=64, default='identicon'))
+            embed.set_footer(text=f"Jailed by: {author}", icon_url=author.display_avatar)
 
         await ctx.send(embed=embed)
 
@@ -323,12 +323,6 @@ class Jail(commands.Cog):
         embed.set_footer(text=f"Unjailed by: {author}", icon_url=author.display_avatar)
 
         await ctx.send(embed=embed)
-
-        # Send the embed message to the user or jail channel
-        await self.notify_user(member, embed)
-
-        # Notify the jail log channel
-        await self.notify_log_channel(ctx.guild, embed)await ctx.send(embed=embed)
 
         # Send the embed message to the user or jail channel
         await self.notify_user(member, embed)
