@@ -1,5 +1,5 @@
 import discord
-from discord import Commands, tasks
+from discord.ext import commands, tasks
 import aiohttp
 import random
 
