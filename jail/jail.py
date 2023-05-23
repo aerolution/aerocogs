@@ -6,7 +6,7 @@ import re
 import asyncio
 from datetime import datetime, timedelta
 
-class JailView(View):
+class JailView(discord.ui.View):
     def __init__(self, member, reason, jail_time):
         super().__init__()
         self.member = member
@@ -16,11 +16,11 @@ class JailView(View):
     async def on_timeout(self):
         await self.message.edit(content="Confirmation timeout. Cancelling jail.", view=None)
 
-    @Button(label="Yes", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
     async def yes_button(self, button, interaction):
         await self.jail_member(interaction)
 
-    @Button(label="No", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
     async def no_button(self, button, interaction):
         await interaction.response.send_message("Jail cancelled.", ephemeral=True)
         await self.message.edit(view=None)
