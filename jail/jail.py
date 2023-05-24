@@ -110,7 +110,7 @@ class Jail(commands.Cog):
             {"name": "Duration", "value": duration if duration else "Indefinite"},
             {"name": "Reason", "value": reason}
         ]
-        embed = await self.create_embed("User Jailed!", "Are you sure you want to jail this user?", fields, thumbnail_url=member.avatar_url)
+        embed = await self.create_embed("User Jailed!", "Are you sure you want to jail this user?", fields, thumbnail_url=member.display_avatar)
         confirmed = await self.confirmation(ctx, embed)
 
         if not confirmed:
@@ -126,7 +126,7 @@ class Jail(commands.Cog):
             if channel != jail_channel:
                 await channel.set_permissions(member, overwrite=discord.PermissionOverwrite(read_messages=False, send_messages=False))
 
-        embed = await self.create_embed("User Jailed!", reason, fields, thumbnail_url=member.avatar_url)
+        embed = await self.create_embed("User Jailed!", reason, fields, thumbnail_url=member.display_avatar)
         await ctx.send(embed=embed)
 
         if unjail_time:
@@ -154,7 +154,7 @@ class Jail(commands.Cog):
             {"name": "Moderator", "value": ctx.author.mention},
             {"name": "Reason", "value": reason}
         ]
-        embed = await self.create_embed("User Unjailed!", "Are you sure you want to unjail this user?", fields, thumbnail_url=member.avatar_url)
+        embed = await self.create_embed("User Unjailed!", "Are you sure you want to unjail this user?", fields, thumbnail_url=member.display_avatar)
         confirmed = await self.confirmation(ctx, embed)
 
         if not confirmed:
