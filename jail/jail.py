@@ -130,7 +130,7 @@ class Jail(commands.Cog):
             embed.add_field(name="Reason", value=formatted_reason, inline=False)
         if jail_time:
             embed.add_field(name="Jail time", value=formatted_time, inline=False)
-        embed.set_thumbnail(url=member.display_avatar)
+        embed.set_thumbnail(url=discord.Member.avatar)
 
         await ctx.send(embed=embed)
 
@@ -163,7 +163,7 @@ class Jail(commands.Cog):
         embed.add_field(name="Unjailed at", value=ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=False)
         if reason:
             embed.add_field(name="Reason", value=reason, inline=False)
-        embed.set_thumbnail(url=ctx.member.display_avatar)
+        embed.set_thumbnail(url=ctx.discord.Member.avatar)
 
         await ctx.send(embed=embed)
 
