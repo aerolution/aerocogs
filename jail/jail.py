@@ -143,9 +143,9 @@ class Jail(commands.Cog):
         if time and not seconds:
             await ctx.send("Invalid time format.")
             return
-            time = self.format_timedelta(jail_seconds)
+            jail_time_str = self.format_timedelta(jail_seconds)
         else:
-            time = "Indefinite"
+            jail_time_str = "Indefinite"
 
         jailed_at = datetime.utcnow()
         
