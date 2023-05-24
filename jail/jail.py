@@ -118,7 +118,7 @@ class Jail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, member: discord.Member, *args):
+    async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: str = None):
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
 
@@ -130,15 +130,31 @@ class Jail(commands.Cog):
 
         await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
-        reason =" ".join(args)
+         if reason is None:
+            reason = "No reason provided"
+
+        if time:
+            jail_seconds = self.parse_time(time)
+            if jail_seconds is None:
+                await ctx.send("Invalid time format. Please use 1d/30m/3h/15s format.")
+                return
+            jail_time_str = self.format_timedelta(jail_seconds)
+        else:
+            jail_time_str = "Indefinite"
+
+        jailed_at = datetime.utcnow()
+
         embed = discord.Embed(
             title="You have been jailed!",
-            description=f"Reason: {reason}",
+            description=f"Reason: {reason}\nJail time: {jail_time_str}\nJailed at: {jailed_at}",
             color=discord.Color.red(),
         )
+        embed.set_thumbnail(url=member.avatar.url)
+
         confirmation_embed = discord.Embed(
             title="Jail Confirmation",
-            description=f"Are you sure you want to jail {member.mention} for the reason: {reason}?",
+            description=(f"Are you sure you want to jail {member.mention} for the reason: {reason} "
+                         f"and jail time: {jail_time_str}?"),
             color=discord.Color.gold(),
         )
         confirmation = await send_confirmation(ctx, confirmation_embed)
@@ -147,10 +163,14 @@ class Jail(commands.Cog):
             await ctx.send(f"{member.mention} has been jailed.")
             log_embed = discord.Embed(
                 title=f"{member} has been jailed",
-                description=f"Reason: {reason}",
+                description=f"Reason: {reason}\nJail time: {jail_time_str}\nJailed at: {jailed_at}",
                 color=discord.Color.red(),
             )
+            log_embed.set_footer(text=f"Jailed by: {ctx.author}")
             await self.notify_log_channel(ctx.guild, log_embed)
+            if time:
+                await asyncio.sleep(jail_seconds)
+                await self.unjail(ctx, member)
         else:
             await ctx.send("Jail action cancelled.")
 
@@ -167,11 +187,15 @@ class Jail(commands.Cog):
         for channel in channels:
             await channel.set_permissions(member, overwrite=None)
 
+        unjailed_at = datetime.utcnow()
+
         embed = discord.Embed(
             title="You have been released from jail!",
-            description="",
+            description=f"Unjailed at: {unjailed_at}",
             color=discord.Color.green(),
         )
+        embed.set_thumbnail(url=member.avatar.url)
+
         confirmation_embed = discord.Embed(
             title="Unjail Confirmation",
             description=f"Are you sure you want to unjail {member.mention}?",
@@ -183,9 +207,10 @@ class Jail(commands.Cog):
             await ctx.send(f"{member.mention} has been released from jail.")
             log_embed = discord.Embed(
                 title=f"{member} has been released from jail",
-                description="",
+                description=f"Unjailed at: {unjailed_at}",
                 color=discord.Color.green(),
             )
+            log_embed.set_footer(text=f"Unjailed by: {ctx.author}")
             await self.notify_log_channel(ctx.guild, log_embed)
         else:
             await ctx.send("Unjail action cancelled.")
