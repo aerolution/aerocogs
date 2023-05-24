@@ -26,7 +26,7 @@ class ConfirmView(View):
 
     @discord.ui.button(label='No', style=discord.ButtonStyle.red)
     async def cancel(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(content="Cancelled.", view=None)
+        await interaction.response.edit_message(content="Cancelled.", embed=None, view=None)
         self.value = False
         self.stop()
 
