@@ -44,7 +44,7 @@ class Jail(commands.Cog):
     Put users in a jail! (Channel.)
     """
 
-     def __init__(self, bot):
+    def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {"jail_channel": None, "jail_log_channel": None}
