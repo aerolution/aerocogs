@@ -130,8 +130,8 @@ class Jail(commands.Cog):
 
         await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
-         if reason is None:
-            reason = "No reason provided"
+        if reason is None:
+           reason = "No reason provided"
 
         if time:
             jail_seconds = self.parse_time(time)
