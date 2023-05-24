@@ -183,7 +183,7 @@ class Jail(commands.Cog):
             )
             embed.set_thumbnail(url=member.display_avatar)
 
-            await self.notify_user(discord.Member, embed)
+            await self.notify_user(member, embed)
             await ctx.send(f"{member.mention} has been jailed.")
             log_embed = discord.Embed(
                 title=f"{member} has been jailed",
