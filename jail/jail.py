@@ -184,8 +184,36 @@ class Jail(commands.Cog):
                 await asyncio.sleep(jail_seconds)
                 await self.unjail(ctx, member)
         else:
-            await ctx.send("Jail action cancelled.")
+     await ctx.send("Jail action cancelled.")
+    
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    @commands.command()
+    async def jailedusers(self, ctx):
+        """
+        Show a list of jailed users and their release times.
+        """
+        jailed_users = []
+        for member in ctx.guild.members:
+            jail_until = await self.config.member(member).jail_until()
+            if jail_until:
+                remaining_time = jail_until - datetime.utcnow().timestamp()
+                if remaining_time > 0:
+                    jailed_users.append((member, remaining_time))
 
+        if not jailed_users:
+            await ctx.send("There are no jailed users.")
+            return
+
+        jailed_users.sort(key=lambda x: x[1])
+        embed = discord.Embed(title="Jailed Users", color=discord.Color.blue())
+
+        for member, remaining_time in jailed_users:
+            formatted_time = self.format_timedelta(remaining_time)
+            embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
+
+        await ctx.send(embed=embed)
+        
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -200,6 +228,8 @@ class Jail(commands.Cog):
             await channel.set_permissions(member, overwrite=None)
 
         unjailed_at = datetime.utcnow()
+        
+        await self.config.member(member).jail_until.set(None)
 
         embed = discord.Embed(
             title="You have been released from jail!",
@@ -226,3 +256,5 @@ class Jail(commands.Cog):
             await self.notify_log_channel(ctx.guild, log_embed)
         else:
             await ctx.send("Unjail action cancelled.")
+            
+            
