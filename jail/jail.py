@@ -1,128 +1,167 @@
 import discord
-from discord.ext import commands
-from datetime import datetime, timedelta
-from re import search
-from redbot.core import Config
+from redbot.core import commands, Config
+import asyncio
+import re
+from datetime import timedelta
 
 class Jail(commands.Cog):
+    """
+    Put users in a jail! (Channel.)
+    """
+
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567890)
-        default_guild = {
-            "jail_channel": None,
-            "logs_channel": None
-        }
+        default_guild = {"jail_channel": None, "jail_log_channel": None}
         self.config.register_guild(**default_guild)
 
-    async def duration_to_seconds(self, duration):
-        match = search(r"(\d+d)?(\d+h)?(\d+m)?(\d+s)?", duration)
-        days, hours, minutes, seconds = [int(x[:-1]) if x else 0 for x in match.groups()]
-        return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds).total_seconds()
+    async def notify_log_channel(self, guild, embed):
+        log_channel_id = await self.config.guild(guild).jail_log_channel()
+        if log_channel_id:
+            log_channel = guild.get_channel(log_channel_id)
+            if log_channel:
+                await log_channel.send(embed=embed)
 
-    async def jail_user(self, guild, user, jail_channel):
-        for channel in guild.channels:
-            if channel.id != jail_channel.id:
-                await channel.set_permissions(user, view_channel=False, send_messages=False)
+    async def notify_user(self, member, embed):
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            jail_channel_id = await self.config.guild(member.guild).jail_channel()
+            jail_channel = member.guild.get_channel(jail_channel_id)
+            if jail_channel:
+                await jail_channel.send(embed=embed)
 
-    async def unjail_user(self, guild, user):
-        for channel in guild.channels:
-            await channel.set_permissions(user, overwrite=None)
+    def parse_time(self, time_str):
+        time_regex = r"(\d+)([smhd])"  # seconds, minutes, hours, days
+        matches = re.findall(time_regex, time_str)
+        if matches:
+            total_seconds = 0
+            for value, unit in matches:
+                if unit == "s":
+                    total_seconds += int(value)
+                elif unit == "m":
+                    total_seconds += int(value) * 60
+                elif unit == "h":
+                    total_seconds += int(value) * 3600
+                elif unit == "d":
+                    total_seconds += int(value) * 86400
+            return total_seconds
+        return None
 
-    @commands.group()
-    async def jailset(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid subcommand. Use `jailset channel` or `jailset logs`.")
+    def format_timedelta(self, seconds):
+        delta = timedelta(seconds=seconds)
+        days = delta.days
+        hours, remainder = divmod(delta.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        time_parts = []
+        if days:
+            time_parts.append(f"{days}d")
+        if hours:
+            time_parts.append(f"{hours}h")
+        if minutes:
+            time_parts.append(f"{minutes}m")
+        if seconds:
+            time_parts.append(f"{seconds}s")
+        return " ".join(time_parts)
 
-    @jailset.command()
-    async def channel(self, ctx, channel: discord.TextChannel):
-        await self.config.guild(ctx.guild).jail_channel.set(channel.id)
-        embed = discord.Embed(title="Jail Channel Set", description=f"Jail channel set to {channel.mention}.", color=discord.Color.blue())
-        await ctx.send(embed=embed)
-
-    @jailset.command()
-    async def logs(self, ctx, channel: discord.TextChannel):
-        await self.config.guild(ctx.guild).logs_channel.set(channel.id)
-        embed = discord.Embed(title="Logs Channel Set", description=f"Logs channel set to {channel.mention}.", color=discord.Color.blue())
-        await ctx.send(embed=embed)
-
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, user: discord.Member, duration: str = None, *, reason: str = None):
-        if duration:
-            duration_seconds = await self.duration_to_seconds(duration)
-            unjail_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
-        else:
-            unjail_time = None
+    async def setjailchannel(self, ctx, channel: discord.TextChannel):
+        """Set the channel to use as the jail."""
+        await self.config.guild(ctx.guild).jail_channel.set(channel.id)
+        await ctx.send(f"The jail channel has been set to {channel.mention}.")
+
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    @commands.command()
+    async def setjaillogchannel(self, ctx, channel: discord.TextChannel):
+        """Set the channel to use for jail logs."""
+        await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
+        await ctx.send(f"The jail log channel has been set to {channel.mention}.")
+
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    @commands.command()
+    async def jail(self, ctx, member: discord.Member, *, reason: commands.clean_content = ""):
+        """Jail a user and restrict them to a single specified channel.
+        
+        You can optionally specify a jail time after the reason. Examples:
+        !jail @user being bad for 1h
+        !jail @user spamming for 30m
+        """
 
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
 
-        embed = discord.Embed(title=f"Are you sure you want to jail {user.display_name}?", color=discord.Color.red())
-        embed.add_field(name="Jail reason", value=reason or "No reason provided")
-        embed.add_field(name="Jailed in", value=jail_channel.mention)
-        embed.add_field(name="Jailed for", value=duration or "Indefinitely")
-        embed.set_thumbnail(url=user.display_avatar)
+        # Get author
+        author = ctx.author
 
-        confirm_view = ConfirmView()
-        confirm_message = await ctx.send(embed=embed, view=confirm_view)
+        # Get all channels in the guild
+        channels = ctx.guild.channels
 
-        await confirm_view.wait()
-        if confirm_view.value:
-            await self.jail_user(ctx.guild, user, jail_channel)
+        # Deny send messages and view channel permissions in all channels
+        for channel in channels:
+            await channel.set_permissions(member, send_messages=False, view_channel=False)
 
-            embed = discord.Embed(title=f"{user.display_name} was jailed", color=discord.Color.red())
-            embed.add_field(name="Jail reason", value=reason or "No reason provided")
-            embed.add_field(name="Jailed in", value=jail_channel.mention)
-            embed.add_field(name="Jailed at", value=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-            embed.add_field(name="Jailed for", value=duration or "Indefinitely")
-            embed.add_field(name="Moderator", value=ctx.author.display_name)
-            embed.set_thumbnail(url=ctx.author.display_avatar)
+        # Allow send messages permission only in the jail channel
+        await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
-            logs_channel_id = await self.config.guild(ctx.guild).logs_channel()
-            logs_channel = ctx.guild.get_channel(logs_channel_id)
-            await logs_channel.send(embed=embed)
+        # Parse the jail time if provided
+        jail_time = self.parse_time(reason)
+        formatted_reason = reason
 
-            await confirm_message.edit(embed=discord.Embed(title=f"{user.display_name} was jailed", color=discord.Color.green()))
-        else:
-            await confirm_message.edit(embed=discord.Embed(title="Jail cancelled", color=discord.Color.green()))
+        if jail_time:
+            formatted_reason = formatted_reason.rsplit(None, 1)[0]  # Remove the time from the reason
+            formatted_time = self.format_timedelta(jail_time)
+            formatted_reason += f" (Jail time: {formatted_time})"
 
+        # Create an embed message
+        embed = discord.Embed(title="User was Jailed!", color=discord.Color.red())
+        embed.add_field(name="User", value=member.mention, inline=False)
+        if formatted_reason:
+            embed.add_field(name="Reason", value=formatted_reason, inline=False)
+        embed.set_footer(text=f"Jailed by: {author}", icon_url=author.avatar)
+
+        await ctx.send(embed=embed)
+
+        # Send the embed message to the user or jail channel
+        await self.notify_user(member, embed)
+
+        # Notify the jail log channel
+        await self.notify_log_channel(ctx.guild, embed)
+
+        if jail_time:
+            await asyncio.sleep(jail_time)
+            await self.unjail(ctx, member, reason="User served their time.")
+
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def unjail(self, ctx, user: discord.Member, *, reason: str = None):
-        embed = discord.Embed(title=f"Are you sure you want to unjail {user.display_name}?", color=discord.Color.green())
-        embed.add_field(name="Unjail reason", value=reason or "No reason provided")
-        embed.set_thumbnail(url=user.display_avatar)
+    async def unjail(self, ctx, member: discord.Member, *, reason: str = None):
+        """Unjail a user and restore their permissions."""
+        # Get all channels in the guild
+        channels = ctx.guild.channels
 
-        confirm_view = ConfirmView()
-        confirm_message = await ctx.send(embed=embed, view=confirm_view)
+        # Remove permission overwrites for the member in all channels
+        for channel in channels:
+            await channel.set_permissions(member, overwrite=None)
 
-        await confirm_view.wait()
-        if confirm_view.value:
-            await self.unjail_user(ctx.guild, user)
+        # Create an embed message
+        embed = discord.Embed(title="User was Unjailed!", color=discord.Color.green())
+        embed.add_field(name="User", value=member.mention, inline=False)
+        if reason:
+            embed.add_field(name="Reason", value=reason, inline=False)
 
-            embed = discord.Embed(title=f"{user.display_name} was unjailed", color=discord.Color.green())
-            embed.add_field(name="Unjail reason", value=reason or "No reason provided")
-            embed.add_field(name="Unjailed at", value=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-            embed.add_field(name="Moderator", value=ctx.author.display_name)
-            embed.set_thumbnail(url=ctx.author.display_avatar)
+        # Get the actual command author
+        author = ctx.author
 
-            logs_channel_id = await self.config.guild(ctx.guild).logs_channel()
-            logs_channel = ctx.guild.get_channel(logs_channel_id)
-            await logs_channel.send(embed=embed)
+        embed.set_footer(text=f"Unjailed by: {author}", icon_url=author.avatar)
 
-            await confirm_message.edit(embed=discord.Embed(title=f"{user.display_name} was unjailed", color=discord.Color.green()))
-        else:
-            await confirm_message.edit(embed=discord.Embed(title="Unjail cancelled", color=discord.Color.green()))
+        await ctx.send(embed=embed)
 
-class ConfirmView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=30.0)
-        self.value = None
+        # Send the embed message to the user or jail channel
+        await self.notify_user(member, embed)
 
-    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
-    async def yes(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.value = True
-        self.stop()
-
-    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
-    async def no(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.value = False
-        self.stop()
+        # Notify the jail log channel
+        await self.notify_log_channel(ctx.guild, embed)
