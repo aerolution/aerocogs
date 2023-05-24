@@ -66,19 +66,25 @@ class Jail(commands.Cog):
 
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    @commands.command()
+    @commands.group()
+    async def jailset(self, ctx):
+        """Configure jail settings."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @jailset.command(name="channel")
     async def setjailchannel(self, ctx, channel: discord.TextChannel):
         """Set the channel to use as the jail."""
         await self.config.guild(ctx.guild).jail_channel.set(channel.id)
-        await ctx.send(f"The jail channel has been set to {channel.mention}.")
+        embed = discord.Embed(title="Jail Channel Set", description=f"The jail channel has been set to {channel.mention}.", color=discord.Color.green())
+        await ctx.send(embed=embed)
 
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
-    @commands.command()
+    @jailset.command(name="logs")
     async def setjaillogchannel(self, ctx, channel: discord.TextChannel):
         """Set the channel to use for jail logs."""
         await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
-        await ctx.send(f"The jail log channel has been set to {channel.mention}.")
+        embed = discord.Embed(title="Jail Log Channel Set", description=f"The jail log channel has been set to {channel.mention}.", color=discord.Color.green())
+        await ctx.send(embed=embed)
 
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
