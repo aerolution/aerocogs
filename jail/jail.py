@@ -5,12 +5,12 @@ import re
 from datetime import timedelta, datetime
 from discord.ui import Button, View
 
+
 class ConfirmView(View):
     def __init__(self, timeout, member):
         super().__init__(timeout=timeout)
         self.member = member
         self.value = None
-        
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.member
@@ -31,11 +31,13 @@ class ConfirmView(View):
         self.value = False
         self.stop()
 
+
 async def send_confirmation(ctx, embed):
     view = ConfirmView(timeout=30, member=ctx.author)
     await ctx.send(embed=embed, view=view)
     await view.wait()
     return view.value
+
 
 class Jail(commands.Cog):
     """
@@ -138,27 +140,27 @@ class Jail(commands.Cog):
         await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
         if reason is None:
-           reason = "No reason provided"
+            reason = "No reason provided"
 
-        jail_seconds = self.parse_time(jail_time_str) if jail_time_str else None
+        jail_seconds = self.parse_time(time) if time else None
 
-if jail_time_str and not jail_seconds:
-    await ctx.send("Invalid time format.")
-    return
+        if time and not jail_seconds:
+            await ctx.send("Invalid time format.")
+            return
 
-if jail_seconds:
-    jail_time_str = self.format_timedelta(jail_seconds)
-else:
-    jail_time_str = "Indefinite"
+        if jail_seconds:
+            jail_time_str = self.format_timedelta(jail_seconds)
+        else:
+            jail_time_str = "Indefinite"
 
-jailed_at = datetime.utcnow()
+        jailed_at = datetime.utcnow()
 
-if jail_seconds:
-    await self.config.member(member).jail_until.set(datetime.utcnow().timestamp() + jail_seconds)
-    await asyncio.sleep(jail_seconds)
-    await self.unjail_user(ctx.guild, member)
-else:
-    await self.config.member(member).jail_until.set(None)
+        if jail_seconds:
+            await self.config.member(member).jail_until.set(datetime.utcnow().timestamp() + jail_seconds)
+            await asyncio.sleep(jail_seconds)
+            await self.unjail_user(ctx.guild, member)
+        else:
+            await self.config.member(member).jail_until.set(None)
 
         embed = discord.Embed(
             title="You have been jailed!",
@@ -169,8 +171,10 @@ else:
 
         confirmation_embed = discord.Embed(
             title="Jail Confirmation",
-            description=(f"Are you sure you want to jail {member.mention} for the reason: {reason} "
-                         f"and jail time: {jail_time_str}?"),
+            description=(
+                f"Are you sure you want to jail {member.mention} for the reason: {reason} "
+                f"and jail time: {jail_time_str}?"
+            ),
             color=discord.Color.gold(),
         )
         confirmation = await send_confirmation(ctx, confirmation_embed)
@@ -188,8 +192,8 @@ else:
                 await asyncio.sleep(jail_seconds)
                 await self.unjail(ctx, member)
         else:
-                await ctx.send("Jail action cancelled.")
-    
+            await ctx.send("Jail action cancelled.")
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -217,7 +221,7 @@ else:
             embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
 
         await ctx.send(embed=embed)
-        
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -232,7 +236,7 @@ else:
             await channel.set_permissions(member, overwrite=None)
 
         unjailed_at = datetime.utcnow()
-        
+
         await self.config.member(member).jail_until.set(None)
 
         embed = discord.Embed(
@@ -260,5 +264,3 @@ else:
             await self.notify_log_channel(ctx.guild, log_embed)
         else:
             await ctx.send("Unjail action cancelled.")
-            
-            
