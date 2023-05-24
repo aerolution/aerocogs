@@ -89,7 +89,7 @@ class Jail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, member: discord.Member, time: str, *, reason: commands.clean_content = ""):
+    async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: commands.clean_content = ""):
         """Jail a user and restrict them to a single specified channel.
         
         You must specify a jail time before the reason. Examples:
