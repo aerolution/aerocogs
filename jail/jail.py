@@ -3,6 +3,7 @@ from discord.ext import commands
 import re
 from datetime import datetime, timedelta
 from redbot.core import Config, checks, commands
+import asyncio
 
 class Jail(commands.Cog):
     def __init__(self, bot):
