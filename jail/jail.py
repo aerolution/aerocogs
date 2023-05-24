@@ -139,13 +139,13 @@ class Jail(commands.Cog):
         if reason is None:
            reason = "No reason provided"
 
-        jail_seconds = self.parse_time(jail_time_str) if time else None
-        if jail_time_str and not seconds:
+        jail_seconds = self.parse_time(time) if time else None
+        if time and not seconds:
             await ctx.send("Invalid time format.")
             return
-            jail_time_str = self.format_timedelta(jail_seconds)
+            time = self.format_timedelta(jail_seconds)
         else:
-            jail_time_str = "Indefinite"
+            time = "Indefinite"
 
         jailed_at = datetime.utcnow()
         
@@ -236,7 +236,7 @@ class Jail(commands.Cog):
             description=f"Unjailed at: {unjailed_at}",
             color=discord.Color.green(),
         )
-        embed.set_thumbnail(url=member.display_avatar.url)
+        embed.set_thumbnail(url=member.display_avatar)
 
         confirmation_embed = discord.Embed(
             title="Unjail Confirmation",
