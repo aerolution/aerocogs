@@ -117,7 +117,7 @@ class Jail(commands.Cog):
         else:
             await ctx.send("Jail action cancelled.")
 
-    async defunjail_user(self, ctx, member: discord.User):
+    async def unjail_user(self, ctx, member: discord.User):
         """
         Remove a user from jail.
         """
