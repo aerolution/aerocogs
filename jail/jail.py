@@ -149,7 +149,7 @@ class Jail(commands.Cog):
             description=f"Reason: {reason}\nJail time: {jail_time_str}\nJailed at: {jailed_at}",
             color=discord.Color.red(),
         )
-        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_thumbnail(url=member.display_avatar.url)
 
         confirmation_embed = discord.Embed(
             title="Jail Confirmation",
@@ -194,7 +194,7 @@ class Jail(commands.Cog):
             description=f"Unjailed at: {unjailed_at}",
             color=discord.Color.green(),
         )
-        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_thumbnail(url=member.display_avatar.url)
 
         confirmation_embed = discord.Embed(
             title="Unjail Confirmation",
