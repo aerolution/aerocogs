@@ -184,7 +184,7 @@ class Jail(commands.Cog):
                 await asyncio.sleep(jail_seconds)
                 await self.unjail(ctx, member)
         else:
-     await ctx.send("Jail action cancelled.")
+                await ctx.send("Jail action cancelled.")
     
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
