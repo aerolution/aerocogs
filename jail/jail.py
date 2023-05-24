@@ -10,6 +10,7 @@ class ConfirmView(View):
         super().__init__(timeout=timeout)
         self.member = member
         self.value = None
+        self.config.register_member(jail_until=None)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.member
@@ -46,7 +47,6 @@ class Jail(commands.Cog):
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {"jail_channel": None, "jail_log_channel": None}
         self.config.register_guild(**default_guild)
-        self.config.register_member(jail_until=None)
 
     async def notify_log_channel(self, guild, embed):
         log_channel_id = await self.config.guild(guild).jail_log_channel()
@@ -139,8 +139,8 @@ class Jail(commands.Cog):
         if reason is None:
            reason = "No reason provided"
 
-        jail_seconds = self.parse_time(time) if time else None
-        if time and not jail_seconds:
+        jail_seconds = self.parse_time(jail_time_str) if time else None
+        if jail_time_str and not seconds:
             await ctx.send("Invalid time format.")
             return
             jail_time_str = self.format_timedelta(jail_seconds)
@@ -236,7 +236,7 @@ class Jail(commands.Cog):
             description=f"Unjailed at: {unjailed_at}",
             color=discord.Color.green(),
         )
-        embed.set_thumbnail(url=member.display_avatar)
+        embed.set_thumbnail(url=member.display_avatar.url)
 
         confirmation_embed = discord.Embed(
             title="Unjail Confirmation",
