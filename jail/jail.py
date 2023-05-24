@@ -140,22 +140,25 @@ class Jail(commands.Cog):
         if reason is None:
            reason = "No reason provided"
 
-        jail_seconds = self.parse_time(jail_time_str) if time else None
-        if jail_time_str and not seconds:
-            await ctx.send("Invalid time format.")
-            return
-            jail_time_str = self.format_timedelta(jail_seconds)
-        else:
-            jail_time_str = "Indefinite"
+        jail_seconds = self.parse_time(jail_time_str) if jail_time_str else None
 
-        jailed_at = datetime.utcnow()
-        
-        if jail_seconds:
-            await self.config.member(member).jail_until.set(datetime.utcnow().timestamp() + jail_seconds)
-            await asyncio.sleep(jail_seconds)
-            await self.unjail_user(ctx.guild, member)
-        else:
-            await self.config.member(member).jail_until.set(None)
+if jail_time_str and not jail_seconds:
+    await ctx.send("Invalid time format.")
+    return
+
+if jail_seconds:
+    jail_time_str = self.format_timedelta(jail_seconds)
+else:
+    jail_time_str = "Indefinite"
+
+jailed_at = datetime.utcnow()
+
+if jail_seconds:
+    await self.config.member(member).jail_until.set(datetime.utcnow().timestamp() + jail_seconds)
+    await asyncio.sleep(jail_seconds)
+    await self.unjail_user(ctx.guild, member)
+else:
+    await self.config.member(member).jail_until.set(None)
 
         embed = discord.Embed(
             title="You have been jailed!",
