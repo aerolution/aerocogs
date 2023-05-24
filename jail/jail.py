@@ -185,9 +185,9 @@ class Jail(commands.Cog):
                 title=f"{member} has been jailed",
                 description=f"Reason: {reason}\nJail time: {jail_time_str}\nJailed at: {jailed_at}",
                 color=discord.Color.red(),
-                thumbnail=member.display_avatar
             )
             log_embed.set_footer(text=f"Jailed by: {ctx.author}")
+            log_embed.set_thumbnail(url=member.display_avatar)
             await self.notify_log_channel(ctx.guild, log_embed)
             if time:
                 await asyncio.sleep(jail_seconds)
@@ -260,9 +260,9 @@ class Jail(commands.Cog):
                 title=f"{member} has been released from jail",
                 description=f"Unjailed at: {unjailed_at}",
                 color=discord.Color.green(),
-                thumbnail=member.display_avatar
             )
             log_embed.set_footer(text=f"Unjailed by: {ctx.author}")
+            log_embed.set_thumbnail(url=member.display_avatar)
             await self.notify_log_channel(ctx.guild, log_embed)
         else:
             await ctx.send("Unjail action cancelled.")
