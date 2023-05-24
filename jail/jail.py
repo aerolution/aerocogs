@@ -10,6 +10,7 @@ class ConfirmView(View):
         super().__init__(timeout=timeout)
         self.member = member
         self.value = None
+        self.config.register_member(jail_until=None)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.member
@@ -119,6 +120,11 @@ class Jail(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.command()
     async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: str = None):
+        """
+        Jail a user. The time format is a combination of numbers followed by the unit: s, m, h, or d. Duration is optional.
+
+        Example: !jail @User 1h2m3s You've been a bad apple.
+        """
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
 
@@ -133,23 +139,29 @@ class Jail(commands.Cog):
         if reason is None:
            reason = "No reason provided"
 
-        if time:
-            jail_seconds = self.parse_time(time)
-            if jail_seconds is None:
-                await ctx.send("Invalid time format. Please use 1d/30m/3h/15s format.")
-                return
+        jail_seconds = self.parse_time(jail_time_str) if time else None
+        if jail_time_str and not seconds:
+            await ctx.send("Invalid time format.")
+            return
             jail_time_str = self.format_timedelta(jail_seconds)
         else:
             jail_time_str = "Indefinite"
 
         jailed_at = datetime.utcnow()
+        
+        if jail_seconds:
+            await self.config.member(member).jail_until.set(datetime.utcnow().timestamp() + jail_seconds)
+            await asyncio.sleep(jail_seconds)
+            await self.unjail_user(ctx.guild, member)
+        else:
+            await self.config.member(member).jail_until.set(None)
 
         embed = discord.Embed(
             title="You have been jailed!",
             description=f"Reason: {reason}\nJail time: {jail_time_str}\nJailed at: {jailed_at}",
             color=discord.Color.red(),
         )
-        embed.set_thumbnail(url=member.display_avatar.url)
+        embed.set_thumbnail(url=member.display_avatar)
 
         confirmation_embed = discord.Embed(
             title="Jail Confirmation",
