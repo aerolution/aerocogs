@@ -119,26 +119,34 @@ class Jail(commands.Cog):
         await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
         return await ctx.send(f"The jail log channel has been set to {channel.mention}.")
 
-@commands.guild_only()
-@commands.has_permissions(manage_roles=True)
-@commands.command()
-async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: str = None):
-    """
-    Jail a user. The time format is a combination of numbers followed by the unit: s, m, h, or d. Duration is optional.
+        
 
-    Example: !jail @User 1h2m3s You've been a bad apple.
-    """
-    jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
-    jail_channel = ctx.guild.get_channel(jail_channel_id)
 
-    if reason is None:
-        reason = "No reason provided"
-
-    jail_seconds = self.parse_time(time) if time else None
-
-    if time and not jail_seconds:
-        await ctx.send("Invalid time format.")
+    async def unjail_user_after_delay(self, guild: discord.Guild, member: discord.Member, delay: int):
+        await asyncio.sleep(delay)
+        await self.unjail_user(guild, member)
         return
+    
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    @commands.command()
+    async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: str = None):
+        """
+        Jail a user. The time format is a combination of numbers followed by the unit: s, m, h, or d. Duration is optional.
+
+        Example: !jail @User 1h2m3s You've been a bad apple.
+        """
+        jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
+        jail_channel = ctx.guild.get_channel(jail_channel_id)
+
+        if reason is None:
+           reason = "No reason provided"
+
+       jail_seconds = self.parse_time(time) if time else None
+
+       if time and not jail_seconds:
+            await ctx.send("Invalid time format.")
+         return
 
     if jail_seconds:
         jail_time_str = self.format_timedelta(jail_seconds)
@@ -193,12 +201,6 @@ async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: s
     else:
         await ctx.send("Jail action cancelled.")
     return
-
-
-    async def unjail_user_after_delay(self, guild: discord.Guild, member: discord.Member, delay: int):
-        await asyncio.sleep(delay)
-        await self.unjail_user(guild, member)
-        return
 
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
