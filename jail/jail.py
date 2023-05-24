@@ -3,7 +3,7 @@ from redbot.core import commands, Config
 import asyncio
 import re
 from datetime import timedelta
-from discord.ui import Button, View
+from discord.ui import button, View
 from discord import ButtonStyle
 
 class JailConfirmationView(View):
@@ -13,7 +13,7 @@ class JailConfirmationView(View):
         self.author = author
         self.result = None
 
-    @Button(label="Confirm", style=ButtonStyle.green)
+    @button(label="Confirm", style=ButtonStyle.green)
     async def confirm_button(self, button, interaction):
         if interaction.user == self.author:
             self.result = True
@@ -21,7 +21,7 @@ class JailConfirmationView(View):
         else:
             await interaction.response.send_message("Only the command author can interact with this message.", ephemeral=True)
 
-    @Button(label="Cancel", style=ButtonStyle.red)
+    @button(label="Cancel", style=ButtonStyle.red)
     async def cancel_button(self, button, interaction):
         if interaction.user == self.author:
             self.result = False
