@@ -190,10 +190,13 @@ class Jail(commands.Cog):
             log_embed.set_thumbnail(url=member.display_avatar)
             await self.notify_log_channel(ctx.guild, log_embed)
             if time:
-                await asyncio.sleep(jail_seconds)
-                await self.unjail(ctx, member)
+    self.bot.loop.create_task(self.unjail_user_after_delay(ctx.guild, member, jail_seconds))
         else:
             await ctx.send("Jail action cancelled.")
+            
+    async def unjail_user_after_delay(self, guild: discord.Guild, member: discord.Member, delay: int):
+        await asyncio.sleep(delay)
+        await self.unjail_user(guild, member)
 
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
@@ -222,6 +225,18 @@ class Jail(commands.Cog):
             embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
 
         await ctx.send(embed=embed)
+        
+        async def unjail_user(self, guild: discord.Guild, member: discord.Member):
+        jail_channel_id = await self.config.guild(guild).jail_channel()
+   if not jail_channel_id:
+        return
+
+    channels = guild.channels
+
+    for channel in channels:
+        await channel.set_permissions(member, overwrite=None)
+
+    await self.config.member(member).jail_until.set(None)
 
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
