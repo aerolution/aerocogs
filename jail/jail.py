@@ -1,12 +1,8 @@
 import discord
 from discord.ext import commands
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_option
-from discord_slash.model import ButtonStyle
-from discord_slash.utils.manage_components import create_actionrow, create_button, wait_for_component
+from interactions import InteractionClient, OptionType, ButtonStyle
 from redbot.core import commands, Config
 import asyncio
-import re
 from datetime import timedelta
 
 class Jail(commands.Cog):
@@ -20,39 +16,22 @@ class Jail(commands.Cog):
         default_guild = {"jail_channel": None, "jail_log_channel": None}
         self.config.register_guild(**default_guild)
 
-        self.slash = SlashCommand(bot, sync_commands=True)  # Initialize the slash commands
+        self.interactions = InteractionClient(bot)  # Initialize the interactions
 
         # Register the slash commands
-        self.slash.slash(name="jailset", description="Manage jail settings.", options=[
-            create_option(
-                name="channel",
-                description="Set the jail channel.",
-                option_type=7,
-                required=True
-            ),
-            create_option(
-                name="log",
-                description="Set the jail log channel.",
-                option_type=7,
-                required=True
-            )
-        ], scope=self)
-        self.slash.slash(name="jail", description="Put a user in jail.", options=[
-            create_option(
-                name="member",
-                description="The user to jail.",
-                option_type=6,
-                required=True
-            )
-        ], scope=self)
-        self.slash.slash(name="unjail", description="Remove a user from jail.", options=[
-            create_option(
-                name="member",
-                description="The user to unjail.",
-                option_type=6,
-                required=True
-            )
-        ], scope=self)
+        @self.interactions.slash_command(name="jailset", description="Manage jail settings.")
+        async def jailset(ctx, channel: OptionType.CHANNEL, log: OptionType.CHANNEL):
+            await self.config.guild(ctx.guild).jail_channel.set(channel.id)
+            await self.config.guild(ctx.guild).jail_log_channel.set(log.id)
+            await ctx.send(f"Jail channel set to {channel.mention} and jail log channel set to {log.mention}.")
+
+        @self.interactions.slash_command(name="jail", description="Put a user in jail.")
+        async def jail(ctx, member: OptionType.USER):
+            await self.jail_user(ctx, member)
+
+        @self.interactions.slash_command(name="unjail", description="Remove a user from jail.")
+        async def unjail(ctx, member: OptionType.USER):
+            await self.unjail_user(ctx, member)
 
     async def send_confirmation_embed(self, ctx, member, action):
         embed = discord.Embed(
@@ -61,29 +40,42 @@ class Jail(commands.Cog):
             color=discord.Color.blurple()
         )
 
-        action_row = create_actionrow(
-            create_button(style=ButtonStyle.green, label="Confirm", custom_id="confirm"),
-            create_button(style=ButtonStyle.red, label="Cancel", custom_id="cancel")
-        )
+        components = [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "style": ButtonStyle.SUCCESS,
+                        "label": "Confirm",
+                        "custom_id": "confirm"
+                    },
+                    {
+                        "type": 2,
+                        "style": ButtonStyle.DANGER,
+                        "label": "Cancel",
+                        "custom_id": "cancel"
+                    }
+                ]
+            }
+        ]
 
-        msg = await ctx.send(embed=embed, components=[action_row])
+        msg = await ctx.send(embed=embed, components=components)
 
         def check(interaction):
             return interaction.author_id == ctx.author_id and interaction.message.id == msg.id
 
         try:
-            button_ctx = await wait_for_component(self.bot, components=action_row, check=check, timeout=60)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60)
         except asyncio.TimeoutError:
-            action_row = create_actionrow(
-                create_button(style=ButtonStyle.green, label="Confirm", custom_id="confirm", disabled=True),
-                create_button(style=ButtonStyle.red, label="Cancel", custom_id="cancel", disabled=True)
-            )
-            await msg.edit(embed=embed, components=[action_row])
+            components[0]["components"][0]["disabled"] = True
+            components[0]["components"][1]["disabled"] = True
+            await msg.edit(embed=embed, components=components)
             return None
 
-        await button_ctx.defer(edit_origin=True)
+        await interaction.response.defer_update()
 
-        return button_ctx.custom_id == "confirm"
+        return interaction.data["custom_id"] == "confirm"
 
     async def restrict_member_channels(self, guild, member):
         jail_channel = guild.get_channel(await self.config.guild(guild).jail_channel())
@@ -95,41 +87,13 @@ class Jail(commands.Cog):
         for channel in guild.text_channels:
             await channel.set_permissions(member, overwrite=None)
 
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
-    @commands.group()
-    async def jailset(self, ctx):
-        """
-        Manage jail settings.
-        """
-        if ctx.invoked_subcommand is None:
-            await ctx.send_help("jailset")
-
-    @jailset.command(name="channel")
-    async def jailset_channel(self, ctx, channel: discord.TextChannel):
-        """
-        Set the jail channel.
-        """
-        await self.config.guild(ctx.guild).jail_channel.set(channel.id)
-        await ctx.send(f"Jail channel set to {channel.mention}.")
-
-    @jailset.command(name="log")
-    async def jailset_log(self, ctx, channel: discord.TextChannel):
-        """
-        Set the jail log channel.
-        """
-        await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
-        await ctx.send(f"Jail log channel set to {channel.mention}.")
-
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
-    @commands.command()
-    async def jail(self, ctx, member:discord.Member):
+    async def jail_user(self, ctx, member: discord.User):
         """
         Put a user in jail.
         """
-        jail_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).jail_channel())
-        jail_log_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).jail_log_channel())
+        guild = ctx.guild
+        jail_channel = guild.get_channel(await self.config.guild(guild).jail_channel())
+        jail_log_channel = guild.get_channel(await self.config.guild(guild).jail_log_channel())
 
         if jail_channel is None or jail_log_channel is None:
             return await ctx.send("Please set the jail channel and jail log channel with the `jailset` command.")
@@ -137,14 +101,14 @@ class Jail(commands.Cog):
         if member == ctx.author:
             return await ctx.send("You cannot jail yourself.")
 
-        if member == ctx.guild.me:
+        if member == guild.me:
             return await ctx.send("You cannot jail the bot.")
 
         confirmed = await self.send_confirmation_embed(ctx, member, "Jail")
 
         if confirmed:
             try:
-                await self.restrict_member_channels(ctx.guild, member)
+                await self.restrict_member_channels(guild, member)
                 await jail_channel.set_permissions(member, overwrite=discord.PermissionOverwrite(read_messages=True, send_messages=True))
                 await ctx.send(f"{member.mention} has been jailed.")
                 await jail_log_channel.send(f"{ctx.author.mention} jailed {member.mention}.")
@@ -153,15 +117,13 @@ class Jail(commands.Cog):
         else:
             await ctx.send("Jail action cancelled.")
 
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
-    @commands.command()
-    async def unjail(self, ctx, member: discord.Member):
+    async defunjail_user(self, ctx, member: discord.User):
         """
         Remove a user from jail.
         """
-        jail_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).jail_channel())
-        jail_log_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).jail_log_channel())
+        guild = ctx.guild
+        jail_channel = guild.get_channel(await self.config.guild(guild).jail_channel())
+        jail_log_channel = guild.get_channel(await self.config.guild(guild).jail_log_channel())
 
         if jail_channel is None or jail_log_channel is None:
             return await ctx.send("Please set the jail channel and jail log channel with the `jailset` command.")
@@ -169,14 +131,14 @@ class Jail(commands.Cog):
         if member == ctx.author:
             return await ctx.send("You cannot unjail yourself.")
 
-        if member == ctx.guild.me:
+        if member == guild.me:
             return await ctx.send("You cannot unjail the bot.")
 
         confirmed = await self.send_confirmation_embed(ctx, member, "Unjail")
 
         if confirmed:
             try:
-                await self.restore_member_channels(ctx.guild, member)
+                await self.restore_member_channels(guild, member)
                 await ctx.send(f"{member.mention} has been unjailed.")
                 await jail_log_channel.send(f"{ctx.author.mention} unjailed {member.mention}.")
             except discord.Forbidden:
