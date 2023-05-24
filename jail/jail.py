@@ -131,7 +131,8 @@ class Jail(commands.Cog):
         )
         await jail_log_channel.send(embed=log_embed)
 
-    @commands.guild_only    @commands.has_permissions(manage_roles=True)
+    @commands.guild_only    
+    @commands.has_permissions(manage_roles=True)
     @commands.command()
     async def unjail(self, ctx, member: discord.Member):
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
