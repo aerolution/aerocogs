@@ -2,7 +2,7 @@ import discord
 from redbot.core import commands, Config
 import asyncio
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 class Jail(commands.Cog):
     """
@@ -89,12 +89,12 @@ class Jail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
-    async def jail(self, ctx, member: discord.Member, *, reason: commands.clean_content = ""):
+    async def jail(self, ctx, member: discord.Member, time: str, *, reason: commands.clean_content = ""):
         """Jail a user and restrict them to a single specified channel.
         
-        You can optionally specify a jail time after the reason. Examples:
-        !jail @user being bad for 1h
-        !jail @user spamming for 30m
+        You must specify a jail time before the reason. Examples:
+        !jail @user 1h being bad
+        !jail @user 30m spamming
         """
 
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
@@ -113,21 +113,21 @@ class Jail(commands.Cog):
         # Allow send messages permission only in the jail channel
         await jail_channel.set_permissions(member, send_messages=True, view_channel=True)
 
-        # Parse the jail time if provided
-        jail_time = self.parse_time(reason)
-        formatted_reason = reason
-
-        if jail_time:
-            formatted_reason = formatted_reason.rsplit(None, 1)[0]  # Remove the time from the reason
-            formatted_time = self.format_timedelta(jail_time)
-            formatted_reason += f" (Jail time: {formatted_time})"
+        # Parse the jail time
+        jail_time = self.parse_time(time)
+        formatted_time = self.format_timedelta(jail_time)
 
         # Create an embed message
         embed = discord.Embed(title="User was Jailed!", color=discord.Color.red())
         embed.add_field(name="User", value=member.mention, inline=False)
-        if formatted_reason:
-            embed.add_field(name="Reason", value=formatted_reason, inline=False)
-        embed.set_footer(text=f"Jailed by: {author}", icon_url=author.avatar)
+        embed.add_field(name="Moderator", value=author.mention, inline=False)
+        embed.add_field(name="Channel Jailed In", value=jail_channel.mention, inline=False)
+        embed.add_field(name="Time Jailed", value=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"), inline=False)
+        if reason:
+            embed.add_field(name="Reason", value=reason, inline=False)
+        if jail_time:
+            embed.add_field(name="Jail Time", value=formatted_time, inline=False)
+        embed.set_thumbnail(url=author.display_avatar)
 
         await ctx.send(embed=embed)
 
@@ -156,13 +156,11 @@ class Jail(commands.Cog):
         # Create an embed message
         embed = discord.Embed(title="User was Unjailed!", color=discord.Color.green())
         embed.add_field(name="User", value=member.mention, inline=False)
+        embed.add_field(name="Moderator", value=ctx.author.mention, inline=False)
         if reason:
             embed.add_field(name="Reason", value=reason, inline=False)
 
-        # Get the actual command author
-        author = ctx.author
-
-        embed.set_footer(text=f"Unjailed by: {author}", icon_url=author.avatar)
+        embed.set_thumbnail(url=ctx.author.display_avatar)
 
         await ctx.send(embed=embed)
 
