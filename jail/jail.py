@@ -1,5 +1,7 @@
 import discord
-from redbot.core import commands, Config
+from discord.ext import commands
+from discord.ui import Button, View
+from redbot.core import Config
 import asyncio
 import re
 from datetime import timedelta
@@ -83,6 +85,21 @@ class Jail(commands.Cog):
         await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
         await ctx.send(f"The jail log channel has been set to {channel.mention}.")
 
+    async def confirm_jail(self, ctx, member: discord.Member):
+        view = ConfirmView(ctx.author.id, member.id)
+        embed = discord.Embed(
+            title="Confirmation",
+            description=f"Are you sure you want to jail {member.mention}?",
+            color=discord.Color.red(),
+        )
+        message = await ctx.send(embed=embed, view=view)
+
+        await view.wait()
+        if view.value is True:
+            await self.execute_jail(ctx, member)
+
+        await message.delete()
+
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     @commands.command()
@@ -93,7 +110,9 @@ class Jail(commands.Cog):
         !jail @user being bad for 1h
         !jail @user spamming for 30m
         """
+        await self.confirm_jail(ctx, member)
 
+    async def execute_jail(self, ctx, member: discord.Member):
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
 
@@ -171,3 +190,40 @@ class Jail(commands.Cog):
 
         # Notify the jail log channel
         await self.notify_log_channel(ctx.guild, embed)
+
+class ConfirmView(View):
+    def __init__(self, author_id, member_id):
+        super().__init__()
+        self.value = None
+        self.author_id = author_id
+        self.member_id = member_id
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
+    async def yes_button(self, button: Button, interaction: discord.Interaction):
+        if interaction.user.id == self.author_id:
+            self.value = True
+            self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
+    async def no_button(self, button: Button, interaction: discord.Interaction):
+        if interaction.user.id == self.author_id:
+            self.value = False
+            self.stop()
+
+# Use this view for confirmation
+@commands.command()
+async def jail(ctx, member: discord.Member):
+    view = ConfirmView(ctx.author.id, member.id)
+    embed = discord.Embed(
+        title="Confirmation",
+        description=f"Are you sure you want to jail {member.mention}?",
+        color=discord.Color.red(),
+    )
+    message = await ctx.send(embed=embed, view=view)
+
+    await view.wait()
+    if view.value is True:
+        # Jail the user
+        await bot.get_cog("Jail").execute_jail(ctx, member)
+
+    await message.delete()
