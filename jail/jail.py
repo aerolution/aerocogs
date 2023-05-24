@@ -11,7 +11,7 @@ class ConfirmView(View):
         self.member = member
         self.value = None
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.interaction) -> bool:
         return interaction.user == self.member
 
     async def on_timeout(self):
@@ -19,13 +19,13 @@ class ConfirmView(View):
             self.value = False
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.green)
-    async def confirm(self, button: Button, interaction: discord.Interaction):
+    async def confirm(self, button: Button, interaction: discord.interaction):
         await interaction.response.send_message("Confirmed", ephemeral=True)
         self.value = True
         self.stop()
 
     @discord.ui.button(label='No', style=discord.ButtonStyle.red)
-    async def cancel(self, button: Button, interaction: discord.Interaction):
+    async def cancel(self, button: Button, interaction: discord.interaction):
         await interaction.response.send_message("Cancelled", ephemeral=True)
         self.value = False
         self.stop()
