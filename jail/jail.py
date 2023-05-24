@@ -140,7 +140,7 @@ class Jail(commands.Cog):
            reason = "No reason provided"
 
         jail_seconds = self.parse_time(time) if time else None
-        if time and not seconds:
+        if time and not jail_seconds:
             await ctx.send("Invalid time format.")
             return
             jail_time_str = self.format_timedelta(jail_seconds)
