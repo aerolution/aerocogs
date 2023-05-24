@@ -44,8 +44,8 @@ class Jail(commands.Cog):
 
         components = [
             [
-                discord.ui.Button(style=discord.ButtonStyle.green, label="Yes"),
-                discord.ui.Button(style=discord.ButtonStyle.red, label="No")
+                discord.ui.button(style=discord.ButtonStyle.green, label="Yes"),
+                discord.ui.button(style=discord.ButtonStyle.red, label="No")
             ]
         ]
 
