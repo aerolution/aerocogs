@@ -20,13 +20,13 @@ class ConfirmView(View):
             self.value = False
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.green)
-    async def confirm(self, interaction: discord.Interaction, button: Button):
+    async def confirm(self, button: Button, interaction: discord.Interaction):
         await interaction.response.edit_message(content=None, embed=None, view=None)
         self.value = True
         self.stop()
 
     @discord.ui.button(label='No', style=discord.ButtonStyle.red)
-    async def cancel(self, interaction: discord.Interaction, button: Button):
+    async def cancel(self, button: Button, interaction: discord.Interaction):
         await interaction.response.edit_message(content="Cancelled.", embed=None, view=None)
         self.value = False
         self.stop()
@@ -45,61 +45,61 @@ class Jail(commands.Cog):
     """
 
     def __init__(self, bot):
-      self.bot = bot
-      self.config = Config.get_conf(self, identifier=1234567890)
-      default_guild = {"jail_channel": None, "jail_log_channel": None}
-      self.config.register_guild(**default_guild)
-      self.config.register_member(jail_until=None)
+        self.bot = bot
+        self.config = Config.get_conf(self, identifier=1234567890)
+        default_guild = {"jail_channel": None, "jail_log_channel": None}
+        self.config.register_guild(**default_guild)
+        self.config.register_member(jail_until=None)
 
 
-async def notify_log_channel(self, guild, embed):
-    log_channel_id = await self.config.guild(guild).jail_log_channel()
-    if log_channel_id:
-        log_channel = guild.get_channel(log_channel_id)
-        if log_channel:
-            await log_channel.send(embed=embed)
+    async def notify_log_channel(self, guild, embed):
+        log_channel_id = await self.config.guild(guild).jail_log_channel()
+        if log_channel_id:
+            log_channel = guild.get_channel(log_channel_id)
+            if log_channel:
+                await log_channel.send(embed=embed)
 
-async def notify_user(self, member, embed):
-    try:
-        await member.send(embed=embed)
-    except discord.Forbidden:
-        jail_channel_id = await self.config.guild(member.guild).jail_channel()
-        jail_channel = member.guild.get_channel(jail_channel_id)
-        if jail_channel:
-            await jail_channel.send(embed=embed)
+    async def notify_user(self, member, embed):
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            jail_channel_id = await self.config.guild(member.guild).jail_channel()
+            jail_channel = member.guild.get_channel(jail_channel_id)
+            if jail_channel:
+                await jail_channel.send(embed=embed)
 
-def parse_time(self, time_str):
-    time_regex = r"(\d+)([smhd])"  # seconds, minutes, hours, days
-    matches = re.findall(time_regex, time_str)
-    if matches:
-        total_seconds = 0
-        for value, unit in matches:
-            if unit == "s":
-                total_seconds += int(value)
-            elif unit == "m":
-                total_seconds += int(value) * 60
-            elif unit == "h":
-                total_seconds += int(value) * 3600
-            elif unit == "d":
-                total_seconds += int(value) * 86400
-        return total_seconds
-    return None
+    def parse_time(self, time_str):
+        time_regex = r"(\d+)([smhd])"  # seconds, minutes, hours, days
+        matches = re.findall(time_regex, time_str)
+        if matches:
+            total_seconds = 0
+            for value, unit in matches:
+                if unit == "s":
+                    total_seconds += int(value)
+                elif unit == "m":
+                    total_seconds += int(value) * 60
+                elif unit == "h":
+                    total_seconds += int(value) * 3600
+                elif unit == "d":
+                    total_seconds += int(value) * 86400
+            return total_seconds
+        return None
 
-def format_timedelta(self, seconds):
-    delta = timedelta(seconds=seconds)
-    days = delta.days
-    hours, remainder = divmod(delta.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_parts = []
-    if days:
-        time_parts.append(f"{days}d")
-    if hours:
-        time_parts.append(f"{hours}h")
-    if minutes:
-        time_parts.append(f"{minutes}m")
-    if seconds:
-        time_parts.append(f"{seconds}s")
-    return " ".join(time_parts)
+    def format_timedelta(self, seconds):
+        delta = timedelta(seconds=seconds)
+        days = delta.days
+        hours, remainder = divmod(delta.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        time_parts = []
+        if days:
+            time_parts.append(f"{days}d")
+        if hours:
+            time_parts.append(f"{hours}h")
+        if minutes:
+            time_parts.append(f"{minutes}m")
+        if seconds:
+            time_parts.append(f"{seconds}s")
+        return " ".join(time_parts)
 
 @commands.guild_only()
 @commands.has_permissions(manage_roles=True)
@@ -112,13 +112,13 @@ async def jailset(self, ctx):
 async def jailset_channel(self, ctx, channel: discord.TextChannel):
     """Set the channel to use as the jail."""
     await self.config.guild(ctx.guild).jail_channel.set(channel.id)
-    await ctx.send(f"The jail channel has been set to {channel.mention}.")
+    return await ctx.send(f"The jail channel has been set to {channel.mention}.")
 
 @jailset.command(name="logs")
 async def jailset_logs(self, ctx, channel: discord.TextChannel):
     """Set the channel to use for jail logs."""
     await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
-    await ctx.send(f"The jail log channel has been set to {channel.mention}.")
+    return await ctx.send(f"The jail log channel has been set to {channel.mention}.")
 
 @commands.guild_only()
 @commands.has_permissions(manage_roles=True)
@@ -194,10 +194,12 @@ async def jail(self, ctx, member: discord.Member, time: str = None, *, reason: s
             self.bot.loop.create_task(self.unjail_user_after_delay(ctx.guild, member, jail_seconds))
     else:
         await ctx.send("Jail action cancelled.")
+    return
 
 async def unjail_user_after_delay(self, guild: discord.Guild, member: discord.Member, delay: int):
     await asyncio.sleep(delay)
     await self.unjail_user(guild, member)
+    return
 
 @commands.guild_only()
 @commands.has_permissions(manage_roles=True)
@@ -226,6 +228,7 @@ async def jailedusers(self, ctx):
         embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
 
     await ctx.send(embed=embed)
+    return
 
 async def unjail_user(self, guild: discord.Guild, member: discord.Member):
     jail_channel_id = await self.config.guild(guild).jail_channel()
@@ -238,6 +241,7 @@ async def unjail_user(self, guild: discord.Guild, member: discord.Member):
         await channel.set_permissions(member, overwrite=None)
 
     await self.config.member(member).jail_until.set(None)
+    return
 
 @commands.guild_only()
 @commands.has_permissions(manage_roles=True)
@@ -282,5 +286,4 @@ async def unjail(self, ctx, member: discord.Member):
         await self.notify_log_channel(ctx.guild, log_embed)
     else:
         await ctx.send("Unjail action cancelled.")
-
-
+    return
