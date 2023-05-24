@@ -69,9 +69,8 @@ class Jail(commands.Cog):
     @commands.group()
     async def jailset(self, ctx):
         """Jail settings."""
-        if ctx.invoked_subcommand is None:
-            await ctx.send_help(ctx.command)
-
+        pass
+  
     @jailset.command(name="channel")
     async def jailset_channel(self, ctx, channel: discord.TextChannel):
         """Set the channel to use as the jail."""
