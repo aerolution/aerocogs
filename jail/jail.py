@@ -58,9 +58,9 @@ class Jail(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
 
-    async def notify_user(self, member, embed):
+    async def notify_user(self, discord.Member, embed):
         try:
-            await member.send(embed=embed)
+            await discord.Member.send(embed=embed)
         except discord.Forbidden:
             jail_channel_id = await self.config.guild(member.guild).jail_channel()
             jail_channel = member.guild.get_channel(jail_channel_id)
@@ -183,7 +183,7 @@ class Jail(commands.Cog):
             )
             embed.set_thumbnail(url=member.display_avatar)
 
-            await self.notify_user(member, embed)
+            await self.notify_user(discord.Member, embed)
             await ctx.send(f"{member.mention} has been jailed.")
             log_embed = discord.Embed(
                 title=f"{member} has been jailed",
