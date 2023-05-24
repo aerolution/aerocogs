@@ -20,7 +20,7 @@ class ConfirmView(View):
             self.value = False
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.green)
-    async def confirm(self, button: Button, interaction: discord.Interaction):
+    async def confirm(self, interaction: discord.Interaction, button: Button):
         await interaction.response.edit_message(content=None, embed=None, view=None)
         self.value = True
         self.stop()
