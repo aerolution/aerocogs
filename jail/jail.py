@@ -49,7 +49,7 @@ class Jail(commands.Cog):
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {"jail_channel": None, "jail_log_channel": None}
         self.config.register_guild(**default_guild)
-        self.config.register_member(jail_until=None)
+        self.config.register_member(jail_until=None, reason=None)
 
     async def notify_log_channel(self, guild, embed):
         log_channel_id = await self.config.guild(guild).jail_log_channel()
