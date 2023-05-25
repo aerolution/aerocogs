@@ -118,6 +118,19 @@ class Jail(commands.Cog):
         """Set the channel to use for jail logs."""
         await self.config.guild(ctx.guild).jail_log_channel.set(channel.id)
         return await ctx.send(f"The jail log channel has been set to {channel.mention}.")
+    
+    async def unjail_user(self, guild: discord.Guild, member: discord.Member):
+        jail_channel_id = await self.config.guild(guild).jail_channel()
+        if not jail_channel_id:
+            return
+
+        channels = guild.channels
+
+        for channel in channels:
+            await channel.set_permissions(member, overwrite=None)
+
+        await self.config.member(member).jail_until.set(None)
+        return
 
     async def unjail_user_after_delay(self, guild: discord.Guild, member: discord.Member, delay: int):
         await asyncio.sleep(delay)
@@ -226,19 +239,6 @@ class Jail(commands.Cog):
             embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
 
         await ctx.send(embed=embed)
-        return
-
-    async def unjail_user(self, guild: discord.Guild, member: discord.Member):
-        jail_channel_id = await self.config.guild(guild).jail_channel()
-        if not jail_channel_id:
-            return
-
-        channels = guild.channels
-
-        for channel in channels:
-            await channel.set_permissions(member, overwrite=None)
-
-        await self.config.member(member).jail_until.set(None)
         return
 
     @commands.guild_only()
