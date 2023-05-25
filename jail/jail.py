@@ -217,26 +217,30 @@ class Jail(commands.Cog):
     @commands.command()
     async def jailedusers(self, ctx):
         """
-        Show a list of jailed users and their release times.
+        Show a list of jailed users, their jail reasons, and their release times.
         """
         jailed_users = []
         for member in ctx.guild.members:
-            jail_until = await self.config.member(member).jail_until()
-            if jail_until:
-                remaining_time = jail_until - datetime.utcnow().timestamp()
-                if remaining_time > 0:
-                    jailed_users.append((member, remaining_time))
+            jail_data = await self.config.member(member).all()
+            if jail_data["jail_until"] or jail_data["reason"]:
+                jailed_users.append((member, jail_data))
 
         if not jailed_users:
             await ctx.send("There are no jailed users.")
             return
 
-        jailed_users.sort(key=lambda x: x[1])
+        jailed_users.sort(key=lambda x: x[1]["jail_until"] if x[1]["jail_until"] else float('inf'))
         embed = discord.Embed(title="Jailed Users", color=discord.Color.blue())
 
-        for member, remaining_time in jailed_users:
-            formatted_time = self.format_timedelta(remaining_time)
-            embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}", inline=False)
+        for member, jail_data in jailed_users:
+            if jail_data["jail_until"]:
+                remaining_time = jail_data["jail_until"] - datetime.utcnow().timestamp()
+                formatted_time = self.format_timedelta(remaining_time)
+            else:
+                formatted_time = "Indefinite"
+
+            reason = jail_data["reason"] if jail_data["reason"] else "No reason provided"
+            embed.add_field(name=f"{member} ({member.id})", value=f"Time remaining: {formatted_time}\nReason: {reason}", inline=False)
 
         await ctx.send(embed=embed)
         return
