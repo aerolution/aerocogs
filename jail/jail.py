@@ -205,6 +205,7 @@ class Jail(commands.Cog):
             )
             log_embed.set_footer(text=f"Jailed by: {ctx.author}", icon_url=ctx.author.display_avatar)
             log_embed.set_thumbnail(url=member.display_avatar)
+            await self.config.member(member).reason.set(reason)
             await self.notify_log_channel(ctx.guild, log_embed)
             if time:
                 self.bot.loop.create_task(self.unjail_user_after_delay(ctx.guild, member, jail_seconds))
