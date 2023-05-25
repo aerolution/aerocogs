@@ -148,7 +148,6 @@ class Jail(commands.Cog):
         """
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
-        await self.config.member(member).reason.set(reason)
 
         if reason is None:
             reason = "No reason provided"
