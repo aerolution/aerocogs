@@ -148,6 +148,7 @@ class Jail(commands.Cog):
         """
         jail_channel_id = await self.config.guild(ctx.guild).jail_channel()
         jail_channel = ctx.guild.get_channel(jail_channel_id)
+        await self.config.member(member).reason.set(reason)
 
         if reason is None:
             reason = "No reason provided"
@@ -171,7 +172,7 @@ class Jail(commands.Cog):
                 f"Are you sure you want to jail {member.mention} for the reason: {reason} "
                 f"and jail time: {jail_time_str}?"
             ),
-            color=discord.Color.gold(),
+            color=discord.Color.random(),
         )
         confirmation = await send_confirmation(ctx, confirmation_embed)
         if confirmation:
@@ -205,7 +206,6 @@ class Jail(commands.Cog):
             )
             log_embed.set_footer(text=f"Jailed by: {ctx.author}", icon_url=ctx.author.display_avatar)
             log_embed.set_thumbnail(url=member.display_avatar)
-            await self.config.member(member).reason.set(reason)
             await self.notify_log_channel(ctx.guild, log_embed)
             if time:
                 self.bot.loop.create_task(self.unjail_user_after_delay(ctx.guild, member, jail_seconds))
