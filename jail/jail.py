@@ -222,7 +222,7 @@ class Jail(commands.Cog):
         jailed_users = []
         for member in ctx.guild.members:
             jail_data = await self.config.member(member).all()
-            if jail_data["jail_until"] or jail_data["reason"]:
+            if jail_data["jail_until"]:
                 jailed_users.append((member, jail_data))
 
         if not jailed_users:
