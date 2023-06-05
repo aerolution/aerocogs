@@ -1,0 +1,13 @@
+{
+  "author": ["Your Name"],
+  "install_msg": "Thanks for installing the ProfileHelper cog!",
+  "name": "ProfileHelper",
+  "short": "A cog to fetch profile pictures and banners from Pinterest.",
+  "description": "This cog fetches profile pictures and banners from specified Pinterest sources and sends them to designated channels.",
+  "tags": ["discord", "red-discordbot", "profile", "pinterest"],
+  "min_python_version": [3, 8, 0],
+  "hidden": false,
+  "required_cogs": {},
+  "requirements": ["aiohttp", "beautifulsoup4"],
+  "end_user_data_statement": "This cog does not store any end user data."
+}
