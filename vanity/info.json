@@ -1,0 +1,10 @@
+{
+  "author": ["katlyn"],
+  "name": "Vanity Checker",
+  "short": "A cog to check for available vanity URLs",
+  "description": "This cog periodically checks a list of vanity URLs and logs the available ones to a specified channel.",
+  "tags": ["vanity", "discord", "url"],
+  "min_bot_version": "3.5.2",
+  "hidden": false,
+  "required_permissions": ["send_messages"]
+}
