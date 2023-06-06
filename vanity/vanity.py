@@ -12,7 +12,7 @@ class VanityChecker(commands.Cog):
     def load_vanity_list(self):
         # Load your extremely long list of words from a file or an external source
         # For example, you can load a text file with one word per line
-        with open("./word_list.txt", "r") as f:
+        with open(".word_list.txt", "r") as f:
             words = [line.strip() for line in f.readlines()]
         return words
 
