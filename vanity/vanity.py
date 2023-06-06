@@ -19,25 +19,23 @@ class VanityChecker(commands.Cog):
             words = [line.strip() for line in f.readlines()]
         return words
 
-
     async def check_vanities(self):
-    await self.bot.wait_until_ready()
-    while not self.bot.is_closed():
-        for vanity in self.vanity_list:
-            if await self.is_vanity_free(vanity):
-                await self.log_vanity(vanity)
-        await asyncio.sleep(self.check_interval)
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed():
+            for vanity in self.vanity_list:
+                if await self.is_vanity_free(vanity):
+                    await self.log_vanity(vanity)
+            await asyncio.sleep(self.check_interval)
 
-            
-async def is_vanity_free(self, vanity):
-    try:
-        invite = await self.bot.fetch_invite(f"https://discord.gg/{vanity}")
-    except discord.NotFound:
-        # The invite was not found, which means the vanity URL is available
-        return True
-    else:
-        # The invite was found, which means the vanity URL is not available
-        return False
+    async def is_vanity_free(self, vanity):
+        try:
+            invite = await self.bot.fetch_invite(f"https://discord.gg/{vanity}")
+        except discord.NotFound:
+            # The invite was not found, which means the vanity URL is available
+            return True
+        else:
+            # The invite was found, which means the vanity URL is not available
+            return False
 
     async def log_vanity(self, vanity):
         channel = self.bot.get_channel(self.channel_id)
