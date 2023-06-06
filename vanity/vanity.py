@@ -1,5 +1,6 @@
 import asyncio
 from redbot.core import commands
+import os
 
 class VanityChecker(commands.Cog):
     def __init__(self, bot):
@@ -12,9 +13,11 @@ class VanityChecker(commands.Cog):
     def load_vanity_list(self):
         # Load your extremely long list of words from a file or an external source
         # For example, you can load a text file with one word per line
-        with open(".word_list.txt", "r") as f:
+        file_path = os.path.join(os.path.dirname(__file__), 'word_list.txt')
+        with open(file_path, "r") as f:
             words = [line.strip() for line in f.readlines()]
         return words
+
 
     async def check_vanities(self):
         await self.bot.wait_until_ready()
