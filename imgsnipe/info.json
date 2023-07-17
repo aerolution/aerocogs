@@ -1,0 +1,18 @@
+{
+  "author": [
+        "kat(katlyn#0001)"
+    ],
+  "name": "ImgSnipe",
+  "short": "A ImgSnipe cog for Red-DiscordBot 3.5.2",
+  "description": "Snipes the recently deleted img.",
+  "version": "1.0.0",
+  "min_bot_version": "3.5.2",
+  "max_bot_version": "3.5.2",
+  "hidden": false,
+  "install_msg": "Thank you for installing the Snipe cog! <3 katlyn 2023",
+  "required_cogs": {},
+  "requirements": [],
+  "tags": ["snipe"],
+  "type": "COG",
+  "end_user_data_statement": "This cog does not store any end user data."
+}
