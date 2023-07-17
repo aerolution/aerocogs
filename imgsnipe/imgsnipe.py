@@ -10,7 +10,6 @@ class ImgSnipe(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    @commands.Cog.listener()
     async def on_message_delete(self, message):
         if message.attachments:
             await self.config.guild(message.guild).sniped_message.set({
