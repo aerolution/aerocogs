@@ -19,8 +19,8 @@ class ImgSnipe(commands.Cog):
                 "author_avatar": str(message.author.avatar_url),
                 "attachment_url": str(message.attachments[0].url)
             })
+            
 
-    @commands.command()
     async def imgsnipe(self, ctx):
         sniped_message = await self.config.guild(ctx.guild).sniped_message()
         if not sniped_message:
